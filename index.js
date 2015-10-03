@@ -1,50 +1,14 @@
 (function() {
 
   var EXAMPLE_RAYTRACER = '# This is a rough port of the raytracer example\n# from http://www.typescriptlang.org/Playground.\n# Drop the compiled output in the developer tools\n# console of an "about:blank" tab to render the\n# raytraced image. It\'ll take a little while\n# because the raytracer is designed to exercise\n# language features, not to be fast.\n\nnamespace Math {\n  def trunc(x double) int {\n    return x as int\n  }\n}\n\ndef render(width int, height int, pixels Int32Array) {\n  var scene = Scene.new(\n    Camera.new(Vector.new(3, 2, 4),\n    Vector.new(-1, 0.5, 0)))\n\n  scene.elements = [\n    Plane.new(\n      Checkerboard.new,\n      Vector.new(0, 1, 0),\n      0),\n    Sphere.new(\n      Shiny.new,\n      Vector.new(0, 1, -0.25),\n      1),\n    Sphere.new(\n      Shiny.new,\n      Vector.new(-1, 0.5, 1.5),\n      0.5),\n  ]\n\n  scene.lights = [\n    Light.new(\n      Vector.new(-2, 2.5, 0),\n      Vector.new(0.49, 0.07, 0.07)),\n    Light.new(\n      Vector.new(1.5, 2.5, 1.5),\n      Vector.new(0.07, 0.07, 0.49)),\n    Light.new(\n      Vector.new(1.5, 2.5, -1.5),\n      Vector.new(0.07, 0.49, 0.071)),\n    Light.new(\n      Vector.new(0, 3.5, 0),\n      Vector.new(0.21, 0.21, 0.35)),\n  ]\n\n  var i = 0\n  for y in 0..height {\n    var screenY = (y * 2.0 + 1 - height) / width\n    for x in 0..width {\n      var screenX = (x * 2.0 + 1 - width) / width\n      pixels[i] = scene.trace2D(screenX, -screenY).pack\n      i++\n    }\n  }\n}\n\nclass Vector {\n  const x double\n  const y double\n  const z double\n\n  def *(s double) Vector {\n    return Vector.new(x * s, y * s, z * s)\n  }\n\n  def /(s double) Vector {\n    return self * (1 / s)\n  }\n\n  def +(v Vector) Vector {\n    return Vector.new(x + v.x, y + v.y, z + v.z)\n  }\n\n  def -(v Vector) Vector {\n    return Vector.new(x - v.x, y - v.y, z - v.z)\n  }\n\n  def *(v Vector) Vector {\n    return Vector.new(x * v.x, y * v.y, z * v.z)\n  }\n\n  def cross(v Vector) Vector {\n    return Vector.new(\n      y * v.z - z * v.y,\n      z * v.x - x * v.z,\n      x * v.y - y * v.x)\n  }\n\n  def dot(v Vector) double {\n    return x * v.x + y * v.y + z * v.z\n  }\n\n  def length double {\n    return Math.sqrt(dot(self))\n  }\n\n  def unit Vector {\n    return self / length\n  }\n\n  def reflectAbout(n Vector) Vector {\n    return self - n * (2 * dot(n))\n  }\n\n  def pack int {\n    return\n      clamp(x) |\n      clamp(y) << 8 |\n      clamp(z) << 16 |\n      0xFF000000\n  }\n}\n\nnamespace Vector {\n  def clamp(x double) int {\n    if x < 0 { return 0 }\n    if x > 1 { return 255 }\n    return Math.trunc(255.999 * x)\n  }\n}\n\nnamespace Colors {\n  const WHITE = Vector.new(1, 1, 1)\n  const BLACK = Vector.new(0, 0, 0)\n  const GRAY = Vector.new(0.5, 0.5, 0.5)\n}\n\nclass Light {\n  var point Vector\n  var color Vector\n}\n\nclass Intersection {\n  var t double\n  var element Element\n}\n\nclass SurfaceInfo {\n  var diffuse Vector\n  var specular Vector\n  var reflect double\n  var roughness double\n}\n\ninterface Surface {\n  def infoAt(point Vector) SurfaceInfo\n}\n\nclass Checkerboard :: Surface {\n  def infoAt(point Vector) SurfaceInfo {\n    if ((Math.trunc(point.x) ^ Math.trunc(point.z)) & 1) != 0 {\n      return WHITE_INFO\n    }\n    return BLACK_INFO\n  }\n}\n\nnamespace Checkerboard {\n  const WHITE_INFO = SurfaceInfo.new(\n    Colors.WHITE, Colors.WHITE, 0.1, 150)\n  const BLACK_INFO = SurfaceInfo.new(\n    Colors.BLACK, Colors.WHITE, 0.7, 150)\n}\n\nclass Shiny :: Surface {\n  def infoAt(point Vector) SurfaceInfo {\n    return INFO\n  }\n}\n\nnamespace Shiny {\n  const INFO = SurfaceInfo.new(\n    Colors.WHITE, Colors.GRAY, 0.7, 250)\n}\n\nclass Element {\n  var surface Surface\n\n  def intersect(origin Vector, ray Vector) Intersection\n  def normalAt(point Vector) Vector\n}\n\nclass Plane : Element {\n  var normal Vector\n  var offset double\n\n  over intersect(origin Vector, ray Vector) Intersection {\n    var t = -(normal.dot(origin) + offset) / normal.dot(ray)\n    if t > 0 {\n      return Intersection.new(t, self)\n    }\n    return null\n  }\n\n  over normalAt(point Vector) Vector {\n    return Vector.new(0, 1, 0)\n  }\n}\n\nclass Sphere : Element {\n  var center Vector\n  var radius double\n\n  over intersect(origin Vector, ray Vector) Intersection {\n    var offset = origin - center\n    var a = ray.dot(ray)\n    var b = 2 * ray.dot(offset)\n    var c = offset.dot(offset) - radius * radius\n    var discriminant = b * b - 4 * a * c\n    if discriminant > 0 {\n      var t = (-b - Math.sqrt(discriminant)) / (2 * a)\n      if t > 0 {\n        return Intersection.new(t, self)\n      }\n    }\n    return null\n  }\n\n  over normalAt(point Vector) Vector {\n    return (point - center) / radius\n  }\n}\n\nclass Camera {\n  var point Vector\n  var forward Vector\n  var right Vector\n  var up Vector\n\n  def new(point Vector, lookAt Vector) {\n    self.point = point\n    forward = (lookAt - point).unit\n    right = forward.cross(Vector.new(0, -1, 0)).unit\n    up = forward.cross(right).unit\n  }\n}\n\nclass Scene {\n  var elements List<Element> = []\n  var lights List<Light> = []\n  var camera Camera\n\n  def intersect(origin Vector, ray Vector, ignore Element) Intersection {\n    var closest Intersection = null\n    for element in elements {\n      if element != ignore {\n        var hit = element.intersect(origin, ray)\n        if hit != null && (closest == null || hit.t < closest.t) {\n          closest = hit\n        }\n      }\n    }\n    return closest\n  }\n\n  def trace3D(origin Vector, ray Vector, ignore Element, depth int) Vector {\n    var hit = intersect(origin, ray, ignore)\n    if hit == null {\n      return Colors.BLACK\n    }\n\n    var point = origin + ray * hit.t\n    var normal = hit.element.normalAt(point)\n    var reflected = ray.reflectAbout(normal)\n    var info = hit.element.surface.infoAt(point)\n    var color = Colors.BLACK\n\n    for light in lights {\n      var delta = light.point - point\n\n      var shadow = intersect(point, delta, hit.element)\n      if shadow != null && shadow.t < 1 {\n        continue\n      }\n      delta = delta.unit\n\n      # Diffuse\n      var weight = Math.max(0, delta.dot(normal))\n      color = color + light.color * info.diffuse * weight\n\n      # Specular\n      weight = Math.pow(Math.max(0, delta.dot(reflected)), info.roughness)\n      color = color + light.color * info.specular * weight\n    }\n\n    # Reflection\n    if depth > 0 {\n      var recursive = trace3D(point, reflected, hit.element, depth - 1)\n      color = color + recursive * info.reflect\n    }\n\n    return color\n  }\n\n  def trace2D(x double, y double) Vector {\n    var ray = camera.forward + camera.right * x + camera.up * y\n    return trace3D(camera.point, ray.unit, null, 5)\n  }\n}\n\n@entry\ndef main {\n  var canvas = document.createElement("canvas")\n  var context = canvas.getContext("2d")\n  var width = 640\n  var height = 480\n  var imageData = context.createImageData(width, height)\n  canvas.width = width\n  canvas.height = height\n  render(width, height, Int32Array.new(imageData.data.buffer))\n  context.putImageData(imageData, 0, 0)\n  document.body.appendChild(canvas)\n}\n\n@import\nclass Int32Array {\n  def new(length int)\n  def []=(index int, value int)\n}\n\n@import\nvar document dynamic\n';
-  var EXAMPLE_TYPE_WRAPPING = '# Type wrapping allows for objects to be implemented\n# directly in terms of other objects without any extra\n# allocation at runtime. Here a 32-bit integer is\n# wrapped in a nice object-oriented RGBA color API.\n# Wrapped types can be casted back and forth with their\n# underlying type using the "as" casting operator.\ntype Color : int {\n  def red int { return (self as int) & 255 }\n  def green int { return ((self as int) >> 8) & 255 }\n  def blue int { return ((self as int) >> 16) & 255 }\n  def alpha int { return (self as int) >>> 24 }\n\n  def toCSS string {\n    return "rgba(" +\n      red.toString + ", " +\n      green.toString + ", " +\n      blue.toString + ", " +\n      (alpha / 255.0).toString +\n    ")"\n  }\n}\n\n# This namespace automatically merges with the definition\n# of "Color" above, mixing global and instance symbols.\nnamespace Color {\n  def new(r int, g int, b int) Color {\n    return new(r, g, b, 255)\n  }\n\n  # The name "new" is not a keyword, so any function can\n  # use that name. These functions here are just regular\n  # global functions.\n  def new(r int, g int, b int, a int) Color {\n    return (r | g << 8 | b << 16 | a << 24) as Color\n  }\n\n  # Skew supports overloading functions by both argument\n  # count and argument type.\n  def new(r double, g double, b double, a double) Color {\n    return new(_clamp(r), _clamp(g), _clamp(b), _clamp(a))\n  }\n\n  # Symbols that start with "_" have protected access and\n  # can only be used from within the type that they are\n  # declared in.\n  def _clamp(v double) int {\n    return v < 0 ? 0 : v >= 1 ? 255 : (v * 256) as int\n  }\n\n  # These will be constant-folded at compile time into\n  # a single integer value each.\n  const RED = new(255, 0, 0)\n  const GREEN = new(0, 255, 0)\n  const BLUE = new(0, 0, 255)\n}\n\n@entry\ndef main {\n  var color = Color.new(1, 2, 3)\n  var choice = (Math.random * 4) as int\n\n  # This could also have used "color = Color.RED" but\n  # the type name before the dot can be omitted when\n  # it can be automatically inferred from context.\n  switch choice {\n    case 1 { color = .RED }\n    case 2 { color = .GREEN }\n    case 3 { color = .BLUE }\n  }\n\n  console.log(color.toCSS)\n}\n\n# Declaring something with the "dynamic" type is a quick\n# way to reference an external API without stubbing out\n# all of the type declarations. This is a special type\n# that\'s a hole in the type system (anything is allowed).\n@import\nconst console dynamic\n';
-
-  var jsKeywords = [
-    'break',
-    'case',
-    'catch',
-    'class',
-    'const',
-    'continue',
-    'debugger',
-    'default',
-    'delete',
-    'do',
-    'else',
-    'export',
-    'extends',
-    'finally',
-    'for',
-    'function',
-    'if',
-    'import',
-    'in',
-    'instanceof',
-    'let',
-    'new',
-    'return',
-    'super',
-    'switch',
-    'this',
-    'throw',
-    'try',
-    'typeof',
-    'var',
-    'void',
-    'while',
-    'with',
-    'yield',
-  ];
+  var EXAMPLE_TYPE_WRAPPING = '# Type wrapping allows for objects to be implemented\n# directly in terms of other objects without any extra\n# allocation at runtime. Here a 32-bit integer is\n# wrapped in a nice object-oriented RGBA color API.\n# Wrapped types can be casted back and forth with their\n# underlying type using the "as" casting operator.\ntype Color : int {\n  def r int { return (self as int) & 255 }\n  def g int { return ((self as int) >> 8) & 255 }\n  def b int { return ((self as int) >> 16) & 255 }\n  def a int { return (self as int) >>> 24 }\n\n  def toCSS string {\n    return "rgba(" +\n      r.toString + ", " +\n      g.toString + ", " +\n      b.toString + ", " +\n      (a / 255.0).toString +\n    ")"\n  }\n}\n\n# This namespace automatically merges with the definition\n# of "Color" above, mixing global and instance symbols.\nnamespace Color {\n  def new(r int, g int, b int) Color {\n    return new(r, g, b, 255)\n  }\n\n  # The name "new" is not a keyword, so any function can\n  # use that name. These functions here are just regular\n  # global functions.\n  def new(r int, g int, b int, a int) Color {\n    return (r | g << 8 | b << 16 | a << 24) as Color\n  }\n\n  # Skew supports overloading functions by both argument\n  # count and argument type.\n  def new(r double, g double, b double, a double) Color {\n    return new(_clamp(r), _clamp(g), _clamp(b), _clamp(a))\n  }\n\n  # Symbols that start with "_" have protected access and\n  # can only be used from within the type that they are\n  # declared in.\n  def _clamp(v double) int {\n    return v < 0 ? 0 : v >= 1 ? 255 : (v * 256) as int\n  }\n\n  # These will be constant-folded at compile time into\n  # a single integer value each.\n  const RED = new(255, 0, 0)\n  const GREEN = new(0, 255, 0)\n  const BLUE = new(0, 0, 255)\n}\n\n@entry\ndef main {\n  var color = Color.new(1, 2, 3)\n  var choice = (Math.random * 4) as int\n\n  # This could also have used "color = Color.RED" but\n  # the type name before the dot can be omitted when\n  # it can be automatically inferred from context.\n  switch choice {\n    case 1 { color = .RED }\n    case 2 { color = .GREEN }\n    case 3 { color = .BLUE }\n  }\n\n  console.log(color.toCSS)\n}\n\n# Declaring something with the "dynamic" type is a quick\n# way to reference an external API without stubbing out\n# all of the type declarations. This is a special type\n# that\'s a hole in the type system (anything is allowed).\n@import\nconst console dynamic\n';
 
   var worker = new Worker('skew-api.min.js');
   var isWorkerBusy = false;
   var pendingWorkerMessage = null;
   var editor = null;
-  var mode = null;
+  var skewMode = null;
+  var jsTokenizer = null;
 
   var output = document.querySelector('.output pre');
   var currentTarget = 'js';
@@ -62,37 +26,21 @@
     var html = data.log.length + ' issue' + (data.log.length === 1 ? '' : 's') + ' found ';
 
     if (data.outputs.length) {
-      html = data.outputs[0].contents.split(/(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g).map(function(part, i) {
-        var token = part.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-        if (i & 1) {
-          if ('"\''.indexOf(token[0]) >= 0) return '<span class="ace_string">' + token + '</span>';
-          if (jsKeywords.indexOf(token) >= 0) return '<span class="ace_keyword">' + token + '</span>';
-          if (token.slice(0, 2) === '//') return '<span class="ace_comment">' + token + '</span>';
-        }
-        return token;
-      }).join('');
+      html = tokenizeToHTML(jsTokenizer, data.outputs[0].contents);
     }
 
-    // Make the text wrap at the character level instead of the word level in
-    // release. Why the hell is this browser specific? Isn't this supposed to
-    // be standardized?
-    if (/\bChrome\b/.test(navigator.userAgent) || /\bApple\b/.test(navigator.vendor)) {
-      output.style.whiteSpace = isRelease ? 'pre' : 'pre-wrap';
-    } else if (/\bFirefox\b/.test(navigator.userAgent)) {
-      output.style.wordBreak = isRelease ? 'break-all' : 'normal';
-    }
-
+    output.classList.toggle('character-wrap', isRelease);
     output.innerHTML = isRelease ? html.replace(/\n/g, '') : html;
 
     var allDiagnostics = [];
-    mode.diagnosticsByLine = {};
+    skewMode.diagnosticsByLine = {};
     data.log.forEach(function(diagnostic) {
       var start = diagnostic.range.start;
-      var diagnostics = mode.diagnosticsByLine[start.line];
+      var diagnostics = skewMode.diagnosticsByLine[start.line];
       if (!diagnostics) {
         diagnostics = [];
         allDiagnostics.push(diagnostics);
-        mode.diagnosticsByLine[start.line] = diagnostics;
+        skewMode.diagnosticsByLine[start.line] = diagnostics;
       }
       diagnostics.push(diagnostic);
     });
@@ -108,7 +56,229 @@
 
     // Force a mode update
     editor.session.$mode = null;
-    editor.session.setMode(mode);
+    editor.session.setMode(skewMode);
+  };
+
+  function BaseMode() {
+  }
+
+  BaseMode.prototype.createWorker = function() {
+  };
+
+  BaseMode.prototype.transformAction = function() {
+  };
+
+  BaseMode.prototype.checkOutdent = function(state, line, input) {
+    if (!/^\s+$/.test(line)) {
+      return false; // Early-out if there's no indent to remove
+    }
+    return /^\s*}/.test(input);
+  };
+
+  BaseMode.prototype.autoOutdent = function(state, session, row) {
+    var line = session.getLine(row);
+    var closingBrace = /^(?:\s*})/.exec(line);
+    if (!closingBrace) {
+      return;
+    }
+
+    var column = closingBrace[0].length;
+    var openingBrace = session.findMatchingBracket({row: row, column: column});
+    if (!openingBrace || openingBrace.row === row) {
+      return;
+    }
+
+    var range = {start: {row: row, column: 0}, end: {row: row, column: column - 1}};
+    var indent = /^\s*/.exec(session.getLine(openingBrace.row))[0];
+    session.doc.replace(range, indent);
+  };
+
+  BaseMode.prototype.getNextLineIndent = function(state, line, tab) {
+    var indent = /^\s*/.exec(line)[0];
+    if (/^.*[{(\[]\s*$/.exec(line)) {
+      indent += tab;
+    }
+    return indent;
+  };
+
+  function SkewMode() {
+    this.diagnosticsByLine = {};
+  }
+
+  SkewMode.prototype = new BaseMode;
+
+  SkewMode.prototype.getTokenizer = function() {
+    var isEntityKeyword = /^(?:catch|class|const|def|enum|for|interface|namespace|over|var)$/;
+    var isKeyword = /^(?:as|break|case|catch|class|const|continue|def|default|else|enum|false|finally|for|if|in|interface|is|namespace|null|over|return|self|super|switch|throw|true|try|var|while)$/;
+    var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
+    var self = this;
+
+    return {
+      getLineTokens: function(line, state, row) {
+        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|#.*|"(?:[^"\\]|\\.)*")/g;
+        var tokens = [];
+        var previous = 0;
+        var wasEntityKeyword = false;
+
+        while (true) {
+          regex.lastIndex = previous;
+          var match = regex.exec(line);
+          if (!match) {
+            break;
+          }
+
+          if (previous < match.index) {
+            tokens.push({
+              type: 'text',
+              value: line.slice(previous, match.index),
+            });
+          }
+
+          var value = match[0];
+
+          tokens.push({
+            type:
+              value[0] === '#' ? 'comment' :
+              value[0] === '"' ? 'string' :
+              isKeyword.test(value) ? 'keyword' :
+              wasEntityKeyword && isIdentifier.test(value) ? 'entity' :
+              'text',
+            value: value,
+          });
+
+          wasEntityKeyword = isEntityKeyword.test(value);
+          previous = match.index + value.length;
+        }
+
+        if (previous < line.length) {
+          tokens.push({
+            type: 'text',
+            value: line.slice(previous),
+          });
+        }
+
+        var diagnostics = self.diagnosticsByLine[row];
+        if (diagnostics) {
+          var column = 0;
+          for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            for (var j = 0; j < diagnostics.length; j++) {
+              var diagnostic = diagnostics[j];
+              var range = diagnostic.range;
+              var start = range.start.column - column;
+              var end = start + (range.end.line === range.start.line ? range.end.column : line.length) - range.start.column;
+
+              // Skip if this token doesn't overlap this diagnostic
+              if (start >= token.value.length || end <= 0) {
+                continue;
+              }
+
+              // Split off the uncovered bit at the start
+              if (start > 0) {
+                tokens.splice(i++, 0, {
+                  type: token.type,
+                  value: token.value.slice(0, start)
+                });
+              }
+
+              // Split off the uncovered bit at the end
+              if (end < token.value.length) {
+                tokens.splice(i + 1, 0, {
+                  type: token.type,
+                  value: token.value.slice(end)
+                });
+              }
+
+              // Add the error type to the covered bit
+              var from = Math.max(start, 0);
+              var to = Math.min(end, token.value.length);
+              token.value = token.value.slice(from, to);
+              token.type += '.' + diagnostic.kind;
+              column += from;
+            }
+
+            column += token.value.length;
+          }
+
+          // Add diagnostics at the end to an extra space at the end of the line
+          var diagnostic = diagnostics[diagnostics.length - 1];
+          if (diagnostic.range.start.column === line.length) {
+            tokens.push({
+              type: diagnostic.kind,
+              value: ' ',
+            });
+          }
+        }
+
+        return {
+          state: null,
+          tokens: tokens,
+        };
+      },
+    };
+  };
+
+  function JavaScriptMode() {
+  }
+
+  JavaScriptMode.prototype = new BaseMode;
+
+  JavaScriptMode.prototype.getTokenizer = function() {
+    var isEntityKeyword = /^(?:function|var)$/;
+    var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|return|super|switch|this|throw|try|typeof|var|void|while|with|yield)$/;
+    var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
+    var self = this;
+
+    return {
+      getLineTokens: function(line, state, row) {
+        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+        var tokens = [];
+        var previous = 0;
+        var wasEntityKeyword = false;
+
+        while (true) {
+          regex.lastIndex = previous;
+          var match = regex.exec(line);
+          if (!match) {
+            break;
+          }
+
+          if (previous < match.index) {
+            tokens.push({
+              type: 'text',
+              value: line.slice(previous, match.index),
+            });
+          }
+
+          var value = match[0];
+
+          tokens.push({
+            type:
+              value.slice(0, 2) === '//' ? 'comment' :
+              '\'"'.indexOf(value[0]) >= 0 ? 'string' :
+              isKeyword.test(value) ? 'keyword' :
+              wasEntityKeyword && isIdentifier.test(value) ? 'entity' :
+              'text',
+            value: value,
+          });
+
+          wasEntityKeyword = isEntityKeyword.test(value);
+          previous = match.index + value.length;
+        }
+
+        if (previous < line.length) {
+          tokens.push({
+            type: 'text',
+            value: line.slice(previous),
+          });
+        }
+
+        return {
+          state: null,
+          tokens: tokens,
+        };
+      },
+    };
   };
 
   function loadTooltips(editor) {
@@ -134,7 +304,7 @@
       clearTimeout(timeout);
       var renderer = editor.renderer;
       var position = renderer.pixelToScreenCoordinates(e.clientX, e.clientY);
-      var diagnostics = mode.diagnosticsByLine[position.row] || [];
+      var diagnostics = skewMode.diagnosticsByLine[position.row] || [];
 
       for (var i = 0; i < diagnostics.length; i++) {
         var diagnostic = diagnostics[i];
@@ -194,7 +364,110 @@
     update();
   }
 
+  function escapeForHTML(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  }
+
+  function tokenizeToHTML(tokenizer, text) {
+    var state;
+    return text.split('\n').map(function(line, i) {
+      var result = tokenizer.getLineTokens(line, state, i);
+      state = result.state;
+      return result.tokens.map(function(token) {
+        var text = escapeForHTML(token.value);
+        return token.type === 'text' ? text : '<span class="' + token.type.split('.').map(function(name) {
+          return 'ace_' + name;
+        }).join(' ') + '">' + text + '</span>';
+      }).join('');
+    }).join('\n');
+  }
+
+  function now() {
+    return window.performance && performance.now ? performance.now() : +new Date;
+  }
+
   function main() {
+    // Make the text wrap at the character level instead of the word level in
+    // release. Why the hell is this browser specific? Isn't this supposed to
+    // be standardized?
+    var style = document.createElement('style');
+    if (/\bChrome\b/.test(navigator.userAgent) || /\bApple\b/.test(navigator.vendor)) {
+      style.textContent = '.character-wrap,.js{white-space:pre;word-break:break-word;}';
+    } else if (/\bFirefox\b/.test(navigator.userAgent)) {
+      style.textContent = '.character-wrap,.js{white-space:pre-wrap;word-break:break-word;word-break:break-all;}';
+    }
+    document.head.appendChild(style);
+
+    var TextMode = ace.require('ace/mode/text').Mode;
+    BaseMode.prototype.tokenRe = TextMode.prototype.tokenRe;
+    BaseMode.prototype.nonTokenRe = TextMode.prototype.nonTokenRe;
+
+    skewMode = new SkewMode;
+    jsTokenizer = new JavaScriptMode().getTokenizer();
+    var skewTokenizer = skewMode.getTokenizer();
+
+    [].forEach.call(document.querySelectorAll('.skew'), function(element) {
+      element.innerHTML = tokenizeToHTML(skewTokenizer, element.textContent);
+    });
+
+    [].forEach.call(document.querySelectorAll('.js'), function(element) {
+      element.innerHTML = tokenizeToHTML(jsTokenizer, element.textContent);
+    });
+
+    var animationCallbacks = [];
+    var animate = function() {
+      for (var i = 0; i < animationCallbacks.length; i++) {
+        animationCallbacks[i]();
+      }
+      requestAnimationFrame(animate);
+    };
+    animate();
+
+    [].forEach.call(document.querySelectorAll('.expand'), function(element) {
+      var isVisible = false;
+      var reveal = element.nextElementSibling;
+      var style = reveal.style;
+      var sourceHeight = 0;
+      var targetHeight = 0;
+      var animationStart = 0;
+      var animationDuration = 0;
+
+      // Use custom animation callbacks because CSS transitions are too broken and cross-browser incompatible
+      animationCallbacks.push(function() {
+        if (sourceHeight !== targetHeight) {
+          var t = (now() - animationStart) / animationDuration;
+          if (t > 1) {
+            sourceHeight = targetHeight;
+            t = 1;
+          }
+          t = 1 - t;
+          t *= t * t;
+          t = 1 - t;
+          style.height = Math.round(sourceHeight + (targetHeight - sourceHeight) * t) + 'px';
+        }
+      });
+
+      // Prepare for a slide-down animation
+      style.display = 'block';
+      style.height = 0;
+
+      element.onclick = function() {
+        isVisible = !isVisible;
+
+        // Measure the height
+        style.transition = 'none';
+        style.height = 'auto';
+        var height = reveal.clientHeight;
+
+        // Animate from the old state to the new state
+        sourceHeight = isVisible ? 0 : height;
+        targetHeight = isVisible ? height : 0;
+        animationStart = now();
+        animationDuration = 100 + Math.min(1, height / 1000) * 400;
+        style.height = sourceHeight + 'px';
+      };
+    });
+
     // Ace really doesn't work on mobile, so don't give mobile users an interactive experience
     if (/mobi/i.test(navigator.userAgent)) {
       return;
@@ -222,17 +495,12 @@
       }
     });
 
-    var TextMode = ace.require('ace/mode/text').Mode;
-    mode = new SkewMode;
-    mode.tokenRe = TextMode.prototype.tokenRe;
-    mode.nonTokenRe = TextMode.prototype.nonTokenRe;
-
     editor = ace.edit('editor');
     editor.$blockScrolling = Infinity;
     editor.renderer.setDisplayIndentGuides(false);
     editor.renderer.setPadding(0);
     editor.renderer.setShowGutter(false);
-    editor.session.setMode(mode);
+    editor.session.setMode(skewMode);
     editor.session.setTabSize(2);
     editor.setHighlightActiveLine(false);
     editor.setOption('maxLines', 1024);

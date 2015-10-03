@@ -4,7 +4,7 @@
     <meta charset="utf8">
     <link rel="stylesheet" href="style.css">
     <title>The Skew Programming Language</title>
-    <meta name="viewport" content="width=700">
+    <meta name="viewport" content="width=450">
   </head>
   <body>
     <header>
@@ -13,7 +13,7 @@
       </div>
     </header>
 
-    <section>
+    <section class="editor">
       <div class="inner">
         <div class="input">
           <h2>
@@ -29,8 +29,8 @@
             </a>
           </h2>
           <div class="editor-wrapper">
-            <pre id="editor"><span class="ace_comment"># Edit this code to try the language out live</span>
-@import
+            <pre id="editor"><span class="ace_comment edit-prompt"># Edit this code to try the language out live
+</span>@import
 <span class="ace_keyword">namespace</span> <span class="ace_entity">console</span> {
   <span class="ace_keyword">def</span> <span class="ace_entity">log</span>(text string)
 }
@@ -67,6 +67,681 @@
       </div>
     </section>
 
+    <section>
+      <div class="inner">
+        <p class="warning">
+          Warning: This is a hobby project and is still evolving rapidly.
+          It can be used for real things (the compiler is written in itself) but the language not completely stable yet.
+        </p>
+
+        <h3>What is it?</h3>
+
+        <p>
+          Skew is a programming language for building cross-platform software.
+          It compiles to straightforward, readable source code in other languages and is designed to be easy to integrate into a mixed-language code base.
+        </p>
+
+        <p>
+          The compiler currently contains a production-quality JavaScript target, a working C# target, and a partially-complete target for C++11.
+          It can easily be extended to support languages like Java, Swift, C++/CX, Python, PHP, and so on.
+        </p>
+
+        <p>
+          Notable features:
+        </p>
+
+        <ul>
+          <li>
+            <a href="javascript:void 0" class="expand">Open declarations</a>
+            <div class="reveal">
+              <p>
+                Unlike most object-oriented languages, all block declarations can be split up into multiple pieces.
+                This makes it much easier to organize complex code (test code can be separate from the implementation, for example) and often also helps when used with conditional compilation.
+              </p>
+              <pre class="skew">enum EventType {
+}
+
+class Event {
+  def type EventType
+}
+
+########################################
+# Keyboard event
+
+enum EventType {
+  KEYBOARD
+}
+
+class Event {
+  def asKeyboardEvent KeyboardEvent {
+    assert(type == .KEYBOARD)
+    return self as KeyboardEvent
+  }
+}
+
+class KeyboardEvent : Event {
+  over type EventType { return .KEYBOARD }
+}
+
+########################################
+# Mouse event
+
+enum EventType {
+  MOUSE
+}
+
+class Event {
+  def asMouseEvent MouseEvent {
+    assert(type == .MOUSE)
+    return self as MouseEvent
+  }
+}
+
+class MouseEvent : Event {
+  over type EventType { return .MOUSE }
+}</pre>
+              <p>
+                Open declarations also make it possible to safely add to imported code and other libraries at compile time, sort of like C# extension methods.
+              </p>
+              <pre class="skew">class double {
+  def radToDeg double {
+    return self * 180 / Math.PI
+  }
+
+  def degToRad double {
+    return self * Math.PI / 180
+  }
+}</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Operator overloading</a>
+            <div class="reveal">
+              <p>
+                Method resolution for overloadable operators looks at the methods available on the first operand (except for the "in" operator, which checks the second operand instead).
+                Operator overloading can make code more readable in many cases, but can also dramatically reduce readability when used incorrectly.
+                Use with good judgement.
+              </p>
+              <pre class="skew">enum Axis {
+  X
+  Y
+}
+
+class Vector {
+  var x double
+  var y double
+
+  def -(p Vector) Vector {
+    return new(x - p.x, y - p.y)
+  }
+
+  def [](a Axis) double {
+    return a == .X ? x : y
+  }
+
+  def []=(a Axis, v double) {
+    if a == .X { x = v }
+    else { y = v }
+  }
+}
+
+@export
+class Player {
+  var position Vector
+
+  def deltaTo(other Player) Vector {
+    return other.position - position
+  }
+
+  def moveAlongAxis(axis Axis, delta double) {
+    position[axis] = position[axis] + delta
+  }
+}</pre>
+              <p>
+                The code above becomes this JavaScript code in debug mode:
+              </p>
+              <pre class="js">(function() {
+  var Axis = {
+    X: 0
+  };
+
+  function Vector(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  Vector.prototype.subtract = function(p) {
+    return new Vector(this.x - p.x, this.y - p.y);
+  };
+
+  Vector.prototype.get = function(a) {
+    return a == Axis.X ? this.x : this.y;
+  };
+
+  Vector.prototype.set = function(a, v) {
+    if (a == Axis.X) {
+      this.x = v;
+    }
+
+    else {
+      this.y = v;
+    }
+  };
+
+  Player = function(position) {
+    this.position = position;
+  };
+
+  Player.prototype.deltaTo = function(other) {
+    return other.position.subtract(this.position);
+  };
+
+  Player.prototype.moveAlongAxis = function(axis, delta) {
+    this.position.set(axis, this.position.get(axis) + delta);
+  };
+})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Wrapped types</a>
+            <div class="reveal">
+              <p>
+                Wrapped types are defined using the "type" keyword.
+                They must be explicitly casted, which can be used to improve type safety.
+              </p>
+              <pre class="skew">type CSV = string
+
+@export
+def escapeForCSV(text string) CSV {
+  if "\"" in text || "," in text || "\n" in text {
+    return ("\"" + text.replaceAll("\"", "\"\"") + "\"") as CSV
+  }
+  return text as CSV
+}</pre>
+              <p>
+                Wrapped types can also be used to add encapsulation without the overhead of additional allocation.
+                Methods added to wrapped types are automatically rewritten as global functions during compilation.
+              </p>
+              <pre class="skew">type Color : int {
+  def r int { return (self as int) &amp; 255 }
+  def g int { return ((self as int) >> 8) &amp; 255 }
+  def b int { return ((self as int) >> 16) &amp; 255 }
+  def a int { return (self as int) >>> 24 }
+
+  def opaque Color {
+    return new(r, g, b, 255)
+  }
+}
+
+namespace Color {
+  def new(r int, g int, b int, a int) Color {
+    return (r | g &lt;&lt; 8 | b &lt;&lt; 16 | a &lt;&lt; 24) as Color
+  }
+}
+
+@export
+def isOrange(color Color) bool {
+  return color.opaque == Color.new(255, 127, 0, 255)
+}</pre>
+              <p>
+                The code above becomes this JavaScript code in release mode:
+              </p>
+              <pre class="js">(function(){isOrange=function(a){return b(a)==-16744449};function b(a){return a&amp;255|(a>>8&amp;255)&lt;&lt;8|(a>>16&amp;255)&lt;&lt;16|-16777216}})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Conditional compilation</a>
+            <div class="reveal">
+              <p>
+                Top-level if statements allow for conditional code compilation.
+                Like all declarations, top-level if statements are also order-independent and are evaluated from the outside in.
+                Conditions must be compile-time constants but are fully type-checked, unlike the C preprocessor.
+                Including preprocessing as part of the syntax tree ensures that there aren't syntax errors hiding in unused code branches.
+                Constant values can be overridden at compile time using a command-line argument such as "--define:TRACE=true".
+              </p>
+              <pre class="skew">if TRACE {
+  const traceEnter = (label string) => {
+    Log.info("[enter] " + label)
+    Log.indent++
+  }
+
+  const traceLeave = (label string) => {
+    Log.indent--
+    Log.info("[leave] " + label)
+  }
+}
+
+else {
+  def traceEnter(label string) {}
+  def traceLeave(label string) {}
+}
+
+const TRACE = false</pre>
+              <p>
+                The compiler includes some predefined variables that are automatically set based on the compilation settings.
+              </p>
+              <pre class="skew">if TARGET == .CSHARP {
+  class ParseError : System.Exception {}
+} else {
+  class ParseError {}
+}</pre>
+              <p>
+                Another form of conditional compilation is the "@skip" annotation.
+                Annotating something with "@skip" means that all call sites and their argument evaluations will be removed at compile time and will not be present in the output.
+                This is cleaner and less error-prone than using top-level if statements for conditional compilation of functions because all uses are type-checked even when unused.
+              </p>
+              <pre class="skew"># Any annotation can be applied conditionally using the
+# post-if syntax. The condition must be a compile-time
+# constant just like for top-level if statements.
+@skip if RELEASE
+def debugLog(text string) {
+  dynamic.console.log(text)
+}
+
+@export
+def sum(x int, y int) int {
+  if x + y &lt; 0 {
+    debugLog("warning: " + x.toString + " + " + y.toString + " &lt; 0")
+  }
+  return x + y
+}</pre>
+              <p>
+                The code above becomes this JavaScript code in debug mode:
+              </p>
+              <pre class="js">(function() {
+  // Any annotation can be applied conditionally using the
+  // post-if syntax. The condition must be a compile-time
+  // constant just like for top-level if statements.
+  function debugLog(text) {
+    console.log(text);
+  }
+
+  sum = function(x, y) {
+    if ((x + y | 0) &lt; 0) {
+      debugLog('warning: ' + x.toString() + ' + ' + y.toString() + ' &lt; 0');
+    }
+
+    return x + y | 0;
+  };
+})();</pre>
+              <p>
+                ...and this in release mode:
+              </p>
+              <pre class="js">(function(){sum=function(a,b){return a+b|0}})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Lambda expressions</a>
+            <div class="reveal">
+              <p>
+                Lambda expressions are lexical closures, meaning they have mutable access to the symbols they close over.
+                Regular functions declared using "def" are not lambda expressions and cannot be casted to a lambda type since they are not represented as objects in some language targets.
+                The argument and/or return types can be omitted when they can be inferred from context.
+              </p>
+              <pre class="skew">@entry
+def main {
+  # These are all equivalent
+  var zero1 = => 0
+  var zero2 = () => 0
+  var zero3 = () int => 0
+  var zero4 = () int => { return 0 }
+
+  # These are both equivalent
+  var add1 = (x int, y int) => 0
+  var add2 fn(int, int) int = (x, y) => 0
+}</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Generics with type erasure</a>
+            <div class="reveal">
+              <p>
+                Type erasure is beneficial in a web environment because it generates compact code, which improves both network transfer time and JIT warmup time.
+                Generics do not currently support type inference.
+              </p>
+              <pre class="skew">class Pair&lt;A, B> {
+  const first A
+  const second B
+}
+
+@export
+def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
+  return Pair&lt;A, B>.new(first, second)
+}</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Type inference</a>
+            <div class="reveal">
+              <p>
+                Types can often be inferred from context, which avoids the need to repeat redundant type declarations.
+                Variable types are optional but function signatures are required to avoid harming API readability.
+              </p>
+              <pre class="skew">enum Demo {
+  DEMO
+}
+
+@export
+def main {
+  # Without type inference
+  var lambda fn(int, int) int = (x int, y int) int => x + y
+  var demo Demo = Demo.DEMO
+  var list List&lt;int> = [1, 2, 3]
+  var map StringMap&lt;int> = {"a": 1, "b": 2}
+
+  # With type inference
+  lambda = (x, y) => x + y
+  demo = .DEMO
+  list = [1, 2, 3]
+  map = {"a": 1, "b": 2}
+}</pre>
+            </div>
+          </li>
+        </ul>
+
+        <p>
+          Compiler optimizations:
+        </p>
+
+        <ul>
+          <li>
+            <a href="javascript:void 0" class="expand">JavaScript syntax tree compaction</a>
+            <div class="reveal">
+              <p>
+                The compiler uses a complex lattice of rules to compact the generated JavaScript code in release mode similar to the advanced compilation mode in Google Closure Compiler.
+                However, the compiler can often do slightly better than Google's compiler due to certain language features (explicit integer types, for example).
+                This reduces application startup time by transferring less data over the network.
+              </p>
+              <pre class="skew">enum Type {
+  RADIANS
+  DEGREES
+  SECONDS
+  METERS
+}
+
+@export
+def format(type Type, value double) string {
+  if type == .DEGREES || type == .RADIANS {
+    if type == .RADIANS {
+      value *= 180 / Math.PI
+    }
+    return value.toString + "deg"
+  }
+  if type == .SECONDS {
+    return value.toString + "s"
+  }
+  assert(type == .METERS)
+  return value.toString + "m"
+}
+</pre>
+              <p>
+                The code above reduces down to this JavaScript code in release mode:
+              </p>
+              <pre class="js">(function(){format=function(a,b){return a==1||!a?(a||(b*=57.29577951308232),b+'deg'):b+(a^2?'m':'s')}})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Symbol renaming</a>
+            <div class="reveal">
+              <p>
+                The compiler includes a global symbol motion and renaming pass in release mode to reduce symbol name length similar to the advanced compilation mode in Google Closure Compiler.
+                Namespace nesting is removed and symbols are renamed to the shortest possible names using frequency analysis.
+                Unrelated properties and local variables can reuse the same names, which makes those names even more common and easier for gzip to compress.
+                This reduces application startup time by transferring less data over the network.
+                It also serves as a form of obfuscation if you care about that sort of thing.
+                Renaming is not done for symbols with an "@import" or "@export" annotation and for names accessed off of the special "dynamic" type.
+              </p>
+              <pre class="skew">namespace Demo {
+  class Vector {
+    var x double
+    var y double
+  }
+
+  class Rect {
+    var lower Vector
+    var upper Vector
+
+    def area double {
+      return (upper.x - lower.x) * (upper.y - lower.y)
+    }
+
+    def include(x double, y double) {
+      lower.x = Math.min(lower.x, x)
+      lower.y = Math.min(lower.y, y)
+      upper.x = Math.max(upper.x, x)
+      upper.y = Math.max(upper.y, y)
+    }
+  }
+
+  namespace Rect {
+    def empty Rect {
+      return new(
+        Vector.new(Math.INFINITY, Math.INFINITY),
+        Vector.new(-Math.INFINITY, -Math.INFINITY))
+    }
+  }
+}
+
+@export
+def demo {
+  var rect = Demo.Rect.empty
+  for i in 0..100 {
+    rect.include(Math.random, Math.random)
+  }
+  console.log(rect.area)
+}
+
+@import
+const console dynamic</pre>
+              <p>
+                The code above becomes this JavaScript code in release mode.
+                Notice how the properties for both "Rect" and "Vector" can reuse the same names because they are two unrelated types:
+              </p>
+              <pre class="js">(function(){demo=function(){for(var a=new i(new h(Infinity,Infinity),new h(-Infinity,-Infinity)),b=0;b&lt;100;++b)f(a,Math.random(),Math.random());console.log(e(a))};function e(a){return (a.b.a-a.a.a)*(a.b.b-a.a.b)}function f(c,a,b){c.a.a=Math.min(c.a.a,a),c.a.b=Math.min(c.a.b,b),c.b.a=Math.max(c.b.a,a),c.b.b=Math.max(c.b.b,b)}function h(a,b){this.a=a,this.b=b}function i(a,b){this.a=a,this.b=b}})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Function inlining</a>
+            <div class="reveal">
+              <p>
+                The compiler currently inlines simple functions where the body consists of a single expression statement or return statement and where each argument is used once.
+              </p>
+              <pre class="skew">class CheckedValue&lt;T> {
+  var _value T
+  var _check fn(T) bool
+
+  def value T {
+    return _value
+  }
+
+  def value=(value T) {
+    assert(_check(value))
+    _value = value
+  }
+}
+
+@entry
+def main {
+  var length = CheckedValue&lt;int>.new(0, x => {
+    return x >= 0
+  })
+  length.value = length.value + 100
+}</pre>
+              <p>
+                The code above becomes this JavaScript code in release mode:
+              </p>
+              <pre class="js">(function(){function e(){var a=new d(0,function(b){return b>-1});a.a=a.a+100|0}function d(a,b){this.a=a,this.b=b}e()})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Constant folding</a>
+            <div class="reveal">
+              <p>
+                Constant folding does partial evaluation of the code at compile-time.
+                This often opens up opportunities for further optimizations such as dead code elimination inside the "else" branch of an "if true" statement.
+                Constant folding works well in combination with with function inlining.
+              </p>
+              <pre class="skew">const COLOR = rgba(127, 255, 0, 255)
+
+def rgba(r int, g int, b int, a int) int {
+  return (r &amp; 255) &lt;&lt; 24 | (g &amp; 255) &lt;&lt; 16 | (b &amp; 255) &lt;&lt; 8 | (a &amp; 255)
+}
+
+@export
+def demo {
+  if COLOR == 0x7FFF00FF {
+    dynamic.console.log(COLOR)
+  }
+}</pre>
+              <p>
+                The code above becomes this JavaScript code in release mode:
+              </p>
+              <pre class="js">(function(){demo=function(){console.log(2147418367)}})();</pre>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Tree shaking</a>
+            <div class="reveal">
+              <p>
+                The compiler starts from functions with the "@export" and "@entry" annotations and finds all transitive dependencies.
+                Any code that wasn't reached is treated as dead and removed from the output.
+                This reduces application startup time by transferring less data over the network.
+                This is also enabled in debug mode because lots of extra unused library code makes debugging harder.
+              </p>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Devirtualization</a>
+            <div class="reveal">
+              <p>
+                Virtual functions have overhead, mostly because they prevent inlining.
+                Devirtualization detects functions that are unnecessarily virtual and rewrites them to global functions instead, which can then be optimized further.
+                It is why function inlining works on instance methods.
+              </p>
+            </div>
+          </li>
+
+          <li>
+            <a href="javascript:void 0" class="expand">Interface removal</a>
+            <div class="reveal">
+              <p>
+                Interfaces that only have one implementation can be safely replaced with that implementation.
+                This opens up more optimization opportunities such as devirtualization and inlining.
+              </p>
+            </div>
+          </li>
+        </ul>
+
+        <h3>Why use it?</h3>
+
+        <p>
+          The intent is to use this language for the platform-independent stuff in an application and to use the language native to the target platform for the platform-specific stuff.
+          When done properly, the vast majority of the code is completely platform-independent and new platforms can be targeted easily with a small platform-specific shim.
+        </p>
+
+        Pros:
+
+        <ul class="padded">
+          <li>
+            <b>Advanced optimizations:</b>
+            The optimizations in the compiler combined with certain language features (integers, explicit exports, wrapped types, etc.) makes writing compact, efficient JavaScript code easy and pleasant.</li>
+          <li>
+            <b>Fast compile times:</b>
+            Code compiles at the speed of a browser refresh.
+            Web development still feels like web development despite using an optimizing compiler with static typing.
+            This is in contrast to many other comparable compile-to-JavaScript languages.
+          </li>
+
+          <li>
+            <b>Natural debugging experience:</b>
+            Debugging is done in a single language using the platform-native debugger.
+            No need to try to debug a multi-language app with a debugger that only understands one language.
+          </li>
+
+          <li>
+            <b>Easy integration:</b>
+            Generated code is very readable and closely corresponds with the original.
+            Language features allow for the easy import and export of code to and from the target language.
+          </li>
+
+          <li>
+            <b>Fast iteration time:</b>
+            In addition to a fast compiler and a good debugging experience, garbage collection is used instead of manual memory management.
+            This eliminates a whole class of time-consuming bugs that get in the way of the important stuff.
+          </li>
+
+          <li>
+            <b>Native code emission:</b>
+            For native targets, application logic is compiled directly to native code and is not interpreted in a virtual machine.
+            Native apps don't have to pay for JIT warmup time and native app performance is not at the whim of heuristics.
+            The generated code can be compiled using industry-standard compilers that leverage decades of optimization work.
+          </li>
+        </ul>
+
+        Cons:
+
+        <ul class="padded">
+          <li>
+            <b>Lack of IDE support:</b>
+            IDE support is planned but is a significant undertaking and will not materialize for a while.
+            Developers who normally lean heavily on IDEs will be less efficient than usual.
+          </li>
+
+          <li>
+            <b>Immaturity:</b>
+            This is a new programming language and hasn't stood the test of time.
+            There will likely be many rough edges both in the language design and in the tools.
+            Many planned features are not yet implemented.
+          </li>
+
+          <li>
+            <b>Lack of community:</b>
+            New programming languages don't have the wealth of searchable Q&amp;A data that established programming languages have.
+            Solutions to random issues are likely not available online.
+          </li>
+
+          <li>
+            <b>No cross-platform multithreading:</b>
+            Multithreading is not a language feature and needs to be done in the target language.
+            This limits multithreading opportunities to cleanly separable tasks like image decoding.
+          </li>
+
+          <li>
+            <b>Lack of low-level features:</b>
+            Features such as memory layout, move semantics, destructors, and vector instructions are intentionally omitted.
+            These features don't map well to all language targets and their emulation is expensive.
+            Use of these features is limited to imported library routines implemented in the target language.
+          </li>
+        </ul>
+
+        <h3>Installation</h3>
+
+        <p>
+          The compiler is currently published on <a href="https://nodejs.org/">node</a>'s package listing.
+          It's simplest to install it globally:
+        </p>
+        <pre>npm install -g skew</pre>
+        <p>
+          The compiler command is called "skewc". Example usage:
+        </p>
+        <pre>skewc in.sk --target=js --output-file=out.js --release</pre>
+        <p>
+          Run "skewc --help" to see a list of all available command-line flags.
+        </p>
+      </div>
+    </section>
+
     <footer>
       <div class="inner">
         <a href="https://github.com/evanw/skew">GitHub Repository</a>
@@ -78,5 +753,4 @@
 </html>
 
 <script src="ace.min.js"></script>
-<script src="mode-skew.js"></script>
 <script src="index.js"></script>

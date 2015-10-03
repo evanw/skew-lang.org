@@ -2,6 +2,7 @@
 
 * {
   box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
 }
 
 html {
@@ -14,12 +15,38 @@ body {
   color: #000;
   font: 16px/24px Roboto, sans-serif;
   margin: 0;
-  padding-bottom: 100px;
+  padding-bottom: 200px;
   min-height: 100%;
 }
 
 a {
   color: inherit;
+}
+
+p,
+ul {
+  margin: 30px 0;
+}
+
+pre {
+  margin: 30px;
+}
+
+ul.padded li {
+  margin-bottom: 1em;
+}
+
+.reveal {
+  display: none;
+  overflow: hidden;
+}
+
+.warning {
+  position: relative;
+  padding-left: 70px;
+  font-weight: bold;
+  margin-bottom: 100px;
+  background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEiIGhlaWdodD0iMzYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTSAyMiAzMiBMIDE5IDMyIEwgMTkgMjkgTCAyMiAyOSBMIDIyIDMyIFogTSAyMS41IDI3IEwgMTkuNSAyNyBMIDE4LjUgMTMgTCAyMi41IDEzIEwgMjEuNSAyNyBaIE0gMCAzNiBMIDIwLjUgMCBMIDQxIDM2IEwgMCAzNiBaIE0gNSAzMyBMIDM2IDMzIEwgMjAuNSA1LjUgTCA1IDMzIFoiLz48L3N2Zz4=) 0 5px no-repeat;
 }
 
 header {
@@ -55,15 +82,20 @@ header:after {
 }
 
 .inner {
+  margin: 0 auto;
+  max-width: 850px;
+  padding: 0 30px;
+}
+
+.editor pre {
+  margin: 0;
+}
+
+.editor .inner {
   position: relative;
   margin: 0 auto;
   width: 90%;
   max-width: 1300px;
-  padding: 0 30px;
-}
-
-header .inner {
-  max-width: 850px;
 }
 
 h1 {
@@ -78,6 +110,12 @@ h2 {
   text-align: center;
   margin: 0 0 20px 0;
   position: relative;
+}
+
+h3 {
+  font: bold 20px/20px Roboto, sans-serif;
+  text-align: center;
+  margin: 100px 0 0 0;
 }
 
 /* Cover up anti-aliasing bugs in iOS */
@@ -237,7 +275,6 @@ pre {
   font: 14px/18px 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'source-code-pro', monospace !important;
   white-space: pre-wrap;
   word-wrap: break-word;
-  margin: 0;
   color: #444;
 }
 
@@ -259,7 +296,11 @@ pre {
 
 .ace_entity {
   color: #000 !important;
-  font-weight: bold;
+}
+
+.ace_selected-word {
+  background: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.25) !important;
 }
 
 .ace_error, .ace_warning {
@@ -322,20 +363,16 @@ footer {
   text-align: center;
 }
 
-footer a {
-  text-decoration: none;
-}
-
-footer a:hover {
-  text-decoration: underline;
-}
-
 footer span {
   color: #999;
   margin: 0 6px;
 }
 
 @media screen and (max-width: 700px) {
+  .edit-prompt {
+    display: none;
+  }
+
   body {
     padding-bottom: 20px;
   }
@@ -349,6 +386,10 @@ footer span {
 
   h2 {
     margin-top: 50px;
+  }
+
+  .editor .inner {
+    width: auto;
   }
 
   .input,
