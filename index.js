@@ -9,6 +9,7 @@
   var editor = null;
   var skewMode = null;
   var jsTokenizer = null;
+  var csharpTokenizer = null;
 
   var output = document.querySelector('.output pre');
   var currentTarget = 'js';
@@ -26,7 +27,7 @@
     var html = escapeForHTML(data.log.text);
 
     if (data.outputs.length) {
-      html = tokenizeToHTML(jsTokenizer, data.outputs[0].contents);
+      html = tokenizeToHTML(currentTarget === 'js' ? jsTokenizer : csharpTokenizer, data.outputs[0].contents);
       if (isRelease) html = html.replace(/\n/g, '');
     }
 
@@ -219,12 +220,7 @@
     };
   };
 
-  function JavaScriptMode() {
-  }
-
-  JavaScriptMode.prototype = new BaseMode;
-
-  JavaScriptMode.prototype.getTokenizer = function() {
+  function getJavaScriptTokenizer() {
     var isEntityKeyword = /^(?:function|var)$/;
     var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|return|super|switch|this|throw|try|typeof|var|void|while|with|yield)$/;
     var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
@@ -264,6 +260,60 @@
           });
 
           wasEntityKeyword = isEntityKeyword.test(value);
+          previous = match.index + value.length;
+        }
+
+        if (previous < line.length) {
+          tokens.push({
+            type: 'text',
+            value: line.slice(previous),
+          });
+        }
+
+        return {
+          state: null,
+          tokens: tokens,
+        };
+      },
+    };
+  };
+
+  function getCSharpTokenizer() {
+    var isKeyword = /^(?:abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|virtual|void|volatile|while)$/;
+    var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
+    var self = this;
+
+    return {
+      getLineTokens: function(line, state, row) {
+        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*")/g;
+        var tokens = [];
+        var previous = 0;
+
+        while (true) {
+          regex.lastIndex = previous;
+          var match = regex.exec(line);
+          if (!match) {
+            break;
+          }
+
+          if (previous < match.index) {
+            tokens.push({
+              type: 'text',
+              value: line.slice(previous, match.index),
+            });
+          }
+
+          var value = match[0];
+
+          tokens.push({
+            type:
+              value.slice(0, 2) === '//' ? 'comment' :
+              value[0] === '"' ? 'string' :
+              isKeyword.test(value) ? 'keyword' :
+              'text',
+            value: value,
+          });
+
           previous = match.index + value.length;
         }
 
@@ -404,7 +454,8 @@
     BaseMode.prototype.nonTokenRe = TextMode.prototype.nonTokenRe;
 
     skewMode = new SkewMode;
-    jsTokenizer = new JavaScriptMode().getTokenizer();
+    jsTokenizer = getJavaScriptTokenizer();
+    csharpTokenizer = getCSharpTokenizer();
     var skewTokenizer = skewMode.getTokenizer();
 
     [].forEach.call(document.querySelectorAll('.skew'), function(element) {
@@ -519,7 +570,7 @@
 
     document.getElementById('target-javascript-debug').onmousedown = function() { changeTarget('js', false, 'JavaScript (Debug)'); };
     document.getElementById('target-javascript-release').onmousedown = function() { changeTarget('js', true, 'JavaScript (Release)'); };
-    // document.getElementById('target-csharp').onmousedown = function() { changeTarget('c#', false, 'C#'); };
+    document.getElementById('target-csharp').onmousedown = function() { changeTarget('c#', false, 'C#'); };
   }
 
   main();
