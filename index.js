@@ -560,6 +560,14 @@
     editor.setShowPrintMargin(false);
     editor.on('change', update);
 
+    var tryButton = document.querySelector('.try-button');
+    tryButton.onclick = function() {
+      editor.focus();
+      editor.selectAll();
+      tryButton.style.visibility = 'hidden';
+    };
+    tryButton.style.visibility = 'visible';
+
     loadTooltips(editor);
     update();
 

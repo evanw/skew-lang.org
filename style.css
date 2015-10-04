@@ -45,7 +45,7 @@ ul.padded li {
   position: relative;
   padding-left: 70px;
   font-weight: bold;
-  margin-bottom: 100px;
+  margin: 100px 0;
   background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEiIGhlaWdodD0iMzYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTSAyMiAzMiBMIDE5IDMyIEwgMTkgMjkgTCAyMiAyOSBMIDIyIDMyIFogTSAyMS41IDI3IEwgMTkuNSAyNyBMIDE4LjUgMTMgTCAyMi41IDEzIEwgMjEuNSAyNyBaIE0gMCAzNiBMIDIwLjUgMCBMIDQxIDM2IEwgMCAzNiBaIE0gNSAzMyBMIDM2IDMzIEwgMjAuNSA1LjUgTCA1IDMzIFoiLz48L3N2Zz4=) 0 5px no-repeat;
 }
 
@@ -85,6 +85,19 @@ header:after {
   margin: 0 auto;
   max-width: 850px;
   padding: 0 30px;
+}
+
+.try-button {
+  display: block;
+  background: black;
+  color: white;
+  width: 150px;
+  line-height: 30px;
+  border-radius: 3px;
+  margin: auto;
+  text-align: center;
+  text-decoration: none;
+  visibility: hidden;
 }
 
 .editor pre {
@@ -369,10 +382,6 @@ footer span {
 }
 
 @media screen and (max-width: 700px) {
-  .edit-prompt {
-    display: none;
-  }
-
   body {
     padding-bottom: 20px;
   }
