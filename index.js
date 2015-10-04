@@ -23,18 +23,19 @@
 
     isWorkerBusy = false;
     var data = e.data;
-    var html = data.log.length + ' issue' + (data.log.length === 1 ? '' : 's') + ' found ';
+    var html = escapeForHTML(data.log.text);
 
     if (data.outputs.length) {
       html = tokenizeToHTML(jsTokenizer, data.outputs[0].contents);
+      if (isRelease) html = html.replace(/\n/g, '');
     }
 
-    output.classList.toggle('character-wrap', isRelease);
-    output.innerHTML = isRelease ? html.replace(/\n/g, '') : html;
+    output.classList.toggle('character-wrap', isRelease && data.outputs.length > 0);
+    output.innerHTML = html;
 
     var allDiagnostics = [];
     skewMode.diagnosticsByLine = {};
-    data.log.forEach(function(diagnostic) {
+    data.log.diagnostics.forEach(function(diagnostic) {
       var start = diagnostic.range.start;
       var diagnostics = skewMode.diagnosticsByLine[start.line];
       if (!diagnostics) {

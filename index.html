@@ -728,17 +728,28 @@ def demo {
         <h3>Installation</h3>
 
         <p>
-          The compiler is currently published on <a href="https://nodejs.org/">node</a>'s package listing.
+          The compiler is currently published on <a href="https://www.npmjs.com/package/skew">npm</a>, the package manager for <a href="https://nodejs.org/">node</a>.
           It's simplest to install it globally:
         </p>
         <pre>npm install -g skew</pre>
         <p>
-          The compiler command is called "skewc". Example usage:
+          The compiler command is called "skewc".
+          Run "skewc --help" to see a list of all available command-line flags.
+          Example usage:
         </p>
         <pre>skewc in.sk --target=js --output-file=out.js --release</pre>
         <p>
-          Run "skewc --help" to see a list of all available command-line flags.
+          The package also contains a simple API for the compiler:
         </p>
+        <pre class="js">var Skew = require('skew');
+var result = Skew.compile({
+  inputs: [{
+    name: '&lt;stdin>',
+    contents: '@entry\ndef main int {\n  var foo = 0\n  return 0\n}\n'
+  }],
+  target: 'js',
+  release: true
+});</pre>
       </div>
     </section>
 
