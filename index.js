@@ -222,7 +222,7 @@
 
   function getJavaScriptTokenizer() {
     var isEntityKeyword = /^(?:function|var)$/;
-    var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|return|super|switch|this|throw|try|typeof|var|void|while|with|yield)$/;
+    var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|import|in|instanceof|let|new|null|return|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)$/;
     var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
     var self = this;
 
