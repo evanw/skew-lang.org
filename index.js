@@ -412,16 +412,6 @@
       isVisible = true;
     }
 
-    function showDelayedTooltip(line, column, html) {
-      if (isVisible) {
-        showTooltip(line, column, html);
-      } else {
-        timeout = setTimeout(function() {
-          showTooltip(line, column, html);
-        }, 250);
-      }
-    }
-
     function hideTooltip() {
       clearTimeout(timeout);
       if (!isVisible) return;
@@ -445,7 +435,9 @@
         var diagnostic = diagnostics[i];
         var range = diagnostic.range;
         if (isPositionInRange(position, range)) {
-          showDelayedTooltip(range.start.line, range.start.column, escapeForHTML(diagnostic.text));
+          timeout = setTimeout(function() {
+            showTooltip(range.start.line, range.start.column, escapeForHTML(diagnostic.text));
+          }, isVisible ? 0 : 250);
           return;
         }
       }
@@ -456,13 +448,16 @@
 
       hideTooltip();
 
-      latestQueryPosition = position;
-      tooltipWorker.queryTooltipAsync({
-        type: 'tooltip-query',
-        source: '<stdin>',
-        line: position.row,
-        column: position.column,
-      });
+      // Only attempt to show a type tooltip if the mouse is still
+      timeout = setTimeout(function() {
+        latestQueryPosition = position;
+        tooltipWorker.queryTooltipAsync({
+          type: 'tooltip-query',
+          source: '<stdin>',
+          line: position.row,
+          column: position.column,
+        });
+      }, isVisible ? 0 : 250);
     }
 
     tooltipWorker.onTooltipQuery = function(data) {
