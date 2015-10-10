@@ -17,7 +17,7 @@
       <div class="inner">
         <div class="input">
           <h2>
-            <a href="javascript:void 0">
+            <a href="javascript:void 0" class="dropdown">
               <span class="compiler-example">Skew</span>
               <ol class="menu">
                 <li class="menu-item disabled">Load example:</li>
@@ -27,40 +27,45 @@
               </ol>
               <span class="menu-arrow">&#9662;</span>
             </a>
+            <a href="javascript:void 0" class="edit button">Edit</a>
           </h2>
           <div class="editor-wrapper">
-            <pre id="editor">@import
-<span class="ace_keyword">namespace</span> <span class="ace_entity">console</span> {
-  <span class="ace_keyword">def</span> <span class="ace_entity">log</span>(text string)
+            <pre id="editor"><span class="ace_comment"># Imported declarations are just for type checking</span>
+@import
+<span class="ace_keyword">namespace</span> <span class="ace_entity">document</span> {
+  <span class="ace_keyword">def</span> <span class="ace_entity">write</span>(text string)
 }
 
+<span class="ace_comment"># The compiler inlines this function in release mode</span>
 <span class="ace_keyword">def</span> <span class="ace_entity">mod</span>(i int, n int, text string) string {
   <span class="ace_keyword">return</span> i % n == 0 ? text : <span class="ace_string">""</span>
 }
 
+<span class="ace_comment"># Execution starts at the entry point</span>
 @entry
 <span class="ace_keyword">def</span> <span class="ace_entity">fizzBuzz</span> {
   <span class="ace_keyword">for</span> <span class="ace_entity">i</span> <span class="ace_keyword">in</span> 1..101 {
     <span class="ace_keyword">var</span> <span class="ace_entity">text</span> = mod(i, 3, <span class="ace_string">"Fizz"</span>) + mod(i, 5, <span class="ace_string">"Buzz"</span>)
-    console.log(text == <span class="ace_string">""</span> ? i.toString : text)
+    document.write((text == <span class="ace_string">""</span> ? i.toString : text) + <span class="ace_string">"\n"</span>)
   }
 }</pre>
           </div>
         </div>
         <div class="output">
           <h2>
-            <a href="javascript:void 0">
-              <span class="compiler-target">JavaScript (Release)</span>
+            <a href="javascript:void 0" class="dropdown">
+              <span class="compiler-target">JS (Release)</span>
               <ol class="menu">
                 <li class="menu-item disabled">Change target:</li>
-                <li class="menu-item" id="target-javascript-debug">JavaScript (Debug)</li>
-                <li class="menu-item" id="target-javascript-release">JavaScript (Release)</li>
+                <li class="menu-item" id="target-javascript-debug">JS (Debug)</li>
+                <li class="menu-item" id="target-javascript-release">JS (Release)</li>
                 <li class="menu-item" id="target-csharp">C#</li>
               </ol>
               <span class="menu-arrow">&#9662;</span>
             </a>
+            <a href="javascript:void 0" class="run button">Run</a>
           </h2>
-          <pre>(<span class="ace_keyword">function</span>(){<span class="ace_keyword">function</span> c(){<span class="ace_keyword">for</span>(<span class="ace_keyword">var</span> a=1;a&lt;101;++a){<span class="ace_keyword">var</span> b=(a%3?<span class="ace_string">''</span>:<span class="ace_string">'Fizz'</span>)+(a%5?<span class="ace_string">''</span>:<span class="ace_string">'Buzz'</span>);console.log(b==<span class="ace_string">''</span>?a.toString():b)}}c()})();</pre>
+          <pre>(<span class="ace_keyword">function</span>(){<span class="ace_keyword">function</span> c(){<span class="ace_keyword">for</span>(<span class="ace_keyword">var</span> a=1;a&lt;101;++a){<span class="ace_keyword">var</span> b=(a%3?<span class="ace_string">''</span>:<span class="ace_string">'Fizz'</span>)+(a%5?<span class="ace_string">''</span>:<span class="ace_string">'Buzz'</span>);document.write((b==<span class="ace_string">''</span>?a.toString():b)+<span class="ace_string">'\n'</span>)}}c()})();</pre>
         </div>
         <div class="clearfix"></div>
       </div>
@@ -68,10 +73,6 @@
 
     <section>
       <div class="inner">
-        <p>
-          <a class="try-button" href="javascript:void 0">Try Skew</a>
-        </p>
-
         <p class="warning">
           Warning: This is a hobby project and is still evolving rapidly.
           It can be used for real things (the compiler is written in itself) but the language is not completely stable yet.
@@ -94,8 +95,8 @@
         </p>
 
         <ul>
-          <li>
-            <a href="javascript:void 0" class="expand">Open declarations</a>
+          <li class="expandable">
+            <button>Open declarations</button>
             <div class="reveal">
               <p>
                 Unlike most object-oriented languages, all block declarations can be split up into multiple pieces.
@@ -158,8 +159,8 @@ class MouseEvent : Event {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Operator overloading</a>
+          <li class="expandable">
+            <button>Operator overloading</button>
             <div class="reveal">
               <p>
                 Method resolution for overloadable operators looks at the methods available on the first operand (except for the "in" operator, which checks the second operand instead).
@@ -247,8 +248,8 @@ class Player {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Wrapped types</a>
+          <li class="expandable">
+            <button>Wrapped types</button>
             <div class="reveal">
               <p>
                 Wrapped types are defined using the "type" keyword.
@@ -295,8 +296,8 @@ def isOrange(color Color) bool {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Conditional compilation</a>
+          <li class="expandable">
+            <button>Conditional compilation</button>
             <div class="reveal">
               <p>
                 Top-level if statements allow for conditional code compilation.
@@ -377,8 +378,8 @@ def sum(x int, y int) int {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Lambda expressions</a>
+          <li class="expandable">
+            <button>Lambda expressions</button>
             <div class="reveal">
               <p>
                 Lambda expressions are lexical closures, meaning they have mutable access to the symbols they close over.
@@ -400,8 +401,8 @@ def main {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Generics with type erasure</a>
+          <li class="expandable">
+            <button>Generics with type erasure</button>
             <div class="reveal">
               <p>
                 Type erasure is beneficial in a web environment because it generates compact code, which improves both network transfer time and JIT warmup time.
@@ -419,8 +420,8 @@ def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Type inference</a>
+          <li class="expandable">
+            <button>Type inference</button>
             <div class="reveal">
               <p>
                 Types can often be inferred from context, which avoids the need to repeat redundant type declarations.
@@ -453,8 +454,8 @@ def main {
         </p>
 
         <ul>
-          <li>
-            <a href="javascript:void 0" class="expand">JavaScript syntax tree compaction</a>
+          <li class="expandable">
+            <button>JavaScript syntax tree compaction</button>
             <div class="reveal">
               <p>
                 The compiler uses a complex lattice of rules to compact the generated JavaScript code in release mode similar to the advanced compilation mode in Google Closure Compiler.
@@ -490,8 +491,8 @@ def format(type Type, value double) string {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Symbol renaming</a>
+          <li class="expandable">
+            <button>Symbol renaming</button>
             <div class="reveal">
               <p>
                 The compiler includes a global symbol motion and renaming pass in release mode to reduce symbol name length similar to the advanced compilation mode in Google Closure Compiler.
@@ -551,8 +552,8 @@ const console dynamic</pre>
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Function inlining</a>
+          <li class="expandable">
+            <button>Function inlining</button>
             <div class="reveal">
               <p>
                 The compiler currently inlines simple functions where the body consists of a single expression statement or return statement and where each argument is used once.
@@ -585,8 +586,8 @@ def main {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Constant folding</a>
+          <li class="expandable">
+            <button>Constant folding</button>
             <div class="reveal">
               <p>
                 Constant folding does partial evaluation of the code at compile-time.
@@ -612,8 +613,8 @@ def demo {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Tree shaking</a>
+          <li class="expandable">
+            <button>Tree shaking</button>
             <div class="reveal">
               <p>
                 The compiler starts from functions with the "@export" and "@entry" annotations and finds all transitive dependencies.
@@ -624,8 +625,8 @@ def demo {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Devirtualization</a>
+          <li class="expandable">
+            <button>Devirtualization</button>
             <div class="reveal">
               <p>
                 Virtual functions have overhead, mostly because they prevent inlining.
@@ -635,8 +636,8 @@ def demo {
             </div>
           </li>
 
-          <li>
-            <a href="javascript:void 0" class="expand">Interface removal</a>
+          <li class="expandable">
+            <button>Interface removal</button>
             <div class="reveal">
               <p>
                 Interfaces that only have one implementation can be safely replaced with that implementation.

@@ -1,7 +1,7 @@
 (function() {
 
-  var EXAMPLE_RAYTRACER = '# This is a rough port of the raytracer example\n# from http://www.typescriptlang.org/Playground.\n# Drop the compiled output in the developer tools\n# console of an "about:blank" tab to render the\n# raytraced image. It\'ll take a little while\n# because the raytracer is designed to exercise\n# language features, not to be fast.\n\nnamespace Math {\n  def trunc(x double) int {\n    return x as int\n  }\n}\n\ndef render(width int, height int, pixels Int32Array) {\n  var scene = Scene.new(\n    Camera.new(Vector.new(3, 2, 4),\n    Vector.new(-1, 0.5, 0)))\n\n  scene.elements = [\n    Plane.new(\n      Checkerboard.new,\n      Vector.new(0, 1, 0),\n      0),\n    Sphere.new(\n      Shiny.new,\n      Vector.new(0, 1, -0.25),\n      1),\n    Sphere.new(\n      Shiny.new,\n      Vector.new(-1, 0.5, 1.5),\n      0.5),\n  ]\n\n  scene.lights = [\n    Light.new(\n      Vector.new(-2, 2.5, 0),\n      Vector.new(0.49, 0.07, 0.07)),\n    Light.new(\n      Vector.new(1.5, 2.5, 1.5),\n      Vector.new(0.07, 0.07, 0.49)),\n    Light.new(\n      Vector.new(1.5, 2.5, -1.5),\n      Vector.new(0.07, 0.49, 0.071)),\n    Light.new(\n      Vector.new(0, 3.5, 0),\n      Vector.new(0.21, 0.21, 0.35)),\n  ]\n\n  var i = 0\n  for y in 0..height {\n    var screenY = (y * 2.0 + 1 - height) / width\n    for x in 0..width {\n      var screenX = (x * 2.0 + 1 - width) / width\n      pixels[i] = scene.trace2D(screenX, -screenY).pack\n      i++\n    }\n  }\n}\n\nclass Vector {\n  const x double\n  const y double\n  const z double\n\n  def *(s double) Vector {\n    return Vector.new(x * s, y * s, z * s)\n  }\n\n  def /(s double) Vector {\n    return self * (1 / s)\n  }\n\n  def +(v Vector) Vector {\n    return Vector.new(x + v.x, y + v.y, z + v.z)\n  }\n\n  def -(v Vector) Vector {\n    return Vector.new(x - v.x, y - v.y, z - v.z)\n  }\n\n  def *(v Vector) Vector {\n    return Vector.new(x * v.x, y * v.y, z * v.z)\n  }\n\n  def cross(v Vector) Vector {\n    return Vector.new(\n      y * v.z - z * v.y,\n      z * v.x - x * v.z,\n      x * v.y - y * v.x)\n  }\n\n  def dot(v Vector) double {\n    return x * v.x + y * v.y + z * v.z\n  }\n\n  def length double {\n    return Math.sqrt(dot(self))\n  }\n\n  def unit Vector {\n    return self / length\n  }\n\n  def reflectAbout(n Vector) Vector {\n    return self - n * (2 * dot(n))\n  }\n\n  def pack int {\n    return\n      clamp(x) |\n      clamp(y) << 8 |\n      clamp(z) << 16 |\n      0xFF000000\n  }\n}\n\nnamespace Vector {\n  def clamp(x double) int {\n    if x < 0 { return 0 }\n    if x > 1 { return 255 }\n    return Math.trunc(255.999 * x)\n  }\n}\n\nnamespace Colors {\n  const WHITE = Vector.new(1, 1, 1)\n  const BLACK = Vector.new(0, 0, 0)\n  const GRAY = Vector.new(0.5, 0.5, 0.5)\n}\n\nclass Light {\n  var point Vector\n  var color Vector\n}\n\nclass Intersection {\n  var t double\n  var element Element\n}\n\nclass SurfaceInfo {\n  var diffuse Vector\n  var specular Vector\n  var reflect double\n  var roughness double\n}\n\ninterface Surface {\n  def infoAt(point Vector) SurfaceInfo\n}\n\nclass Checkerboard :: Surface {\n  def infoAt(point Vector) SurfaceInfo {\n    if ((Math.trunc(point.x) ^ Math.trunc(point.z)) & 1) != 0 {\n      return WHITE_INFO\n    }\n    return BLACK_INFO\n  }\n}\n\nnamespace Checkerboard {\n  const WHITE_INFO = SurfaceInfo.new(\n    Colors.WHITE, Colors.WHITE, 0.1, 150)\n  const BLACK_INFO = SurfaceInfo.new(\n    Colors.BLACK, Colors.WHITE, 0.7, 150)\n}\n\nclass Shiny :: Surface {\n  def infoAt(point Vector) SurfaceInfo {\n    return INFO\n  }\n}\n\nnamespace Shiny {\n  const INFO = SurfaceInfo.new(\n    Colors.WHITE, Colors.GRAY, 0.7, 250)\n}\n\nclass Element {\n  var surface Surface\n\n  def intersect(origin Vector, ray Vector) Intersection\n  def normalAt(point Vector) Vector\n}\n\nclass Plane : Element {\n  var normal Vector\n  var offset double\n\n  over intersect(origin Vector, ray Vector) Intersection {\n    var t = -(normal.dot(origin) + offset) / normal.dot(ray)\n    if t > 0 {\n      return Intersection.new(t, self)\n    }\n    return null\n  }\n\n  over normalAt(point Vector) Vector {\n    return Vector.new(0, 1, 0)\n  }\n}\n\nclass Sphere : Element {\n  var center Vector\n  var radius double\n\n  over intersect(origin Vector, ray Vector) Intersection {\n    var offset = origin - center\n    var a = ray.dot(ray)\n    var b = 2 * ray.dot(offset)\n    var c = offset.dot(offset) - radius * radius\n    var discriminant = b * b - 4 * a * c\n    if discriminant > 0 {\n      var t = (-b - Math.sqrt(discriminant)) / (2 * a)\n      if t > 0 {\n        return Intersection.new(t, self)\n      }\n    }\n    return null\n  }\n\n  over normalAt(point Vector) Vector {\n    return (point - center) / radius\n  }\n}\n\nclass Camera {\n  var point Vector\n  var forward Vector\n  var right Vector\n  var up Vector\n\n  def new(point Vector, lookAt Vector) {\n    self.point = point\n    forward = (lookAt - point).unit\n    right = forward.cross(Vector.new(0, -1, 0)).unit\n    up = forward.cross(right).unit\n  }\n}\n\nclass Scene {\n  var elements List<Element> = []\n  var lights List<Light> = []\n  var camera Camera\n\n  def intersect(origin Vector, ray Vector, ignore Element) Intersection {\n    var closest Intersection = null\n    for element in elements {\n      if element != ignore {\n        var hit = element.intersect(origin, ray)\n        if hit != null && (closest == null || hit.t < closest.t) {\n          closest = hit\n        }\n      }\n    }\n    return closest\n  }\n\n  def trace3D(origin Vector, ray Vector, ignore Element, depth int) Vector {\n    var hit = intersect(origin, ray, ignore)\n    if hit == null {\n      return Colors.BLACK\n    }\n\n    var point = origin + ray * hit.t\n    var normal = hit.element.normalAt(point)\n    var reflected = ray.reflectAbout(normal)\n    var info = hit.element.surface.infoAt(point)\n    var color = Colors.BLACK\n\n    for light in lights {\n      var delta = light.point - point\n\n      var shadow = intersect(point, delta, hit.element)\n      if shadow != null && shadow.t < 1 {\n        continue\n      }\n      delta = delta.unit\n\n      # Diffuse\n      var weight = Math.max(0, delta.dot(normal))\n      color = color + light.color * info.diffuse * weight\n\n      # Specular\n      weight = Math.pow(Math.max(0, delta.dot(reflected)), info.roughness)\n      color = color + light.color * info.specular * weight\n    }\n\n    # Reflection\n    if depth > 0 {\n      var recursive = trace3D(point, reflected, hit.element, depth - 1)\n      color = color + recursive * info.reflect\n    }\n\n    return color\n  }\n\n  def trace2D(x double, y double) Vector {\n    var ray = camera.forward + camera.right * x + camera.up * y\n    return trace3D(camera.point, ray.unit, null, 5)\n  }\n}\n\n@entry\ndef main {\n  var canvas = document.createElement("canvas")\n  var context = canvas.getContext("2d")\n  var width = 640\n  var height = 480\n  var imageData = context.createImageData(width, height)\n  canvas.width = width\n  canvas.height = height\n  render(width, height, Int32Array.new(imageData.data.buffer))\n  context.putImageData(imageData, 0, 0)\n  document.body.appendChild(canvas)\n}\n\n@import\nclass Int32Array {\n  def new(length int)\n  def []=(index int, value int)\n}\n\n@import\nvar document dynamic\n';
-  var EXAMPLE_TYPE_WRAPPING = '# Type wrapping allows for objects to be implemented\n# directly in terms of other objects without any extra\n# allocation at runtime. Here a 32-bit integer is\n# wrapped in a nice object-oriented RGBA color API.\n# Wrapped types can be casted back and forth with their\n# underlying type using the "as" casting operator.\ntype Color : int {\n  def r int { return (self as int) & 255 }\n  def g int { return ((self as int) >> 8) & 255 }\n  def b int { return ((self as int) >> 16) & 255 }\n  def a int { return (self as int) >>> 24 }\n\n  def toCSS string {\n    return "rgba(" +\n      r.toString + ", " +\n      g.toString + ", " +\n      b.toString + ", " +\n      (a / 255.0).toString +\n    ")"\n  }\n}\n\n# This namespace automatically merges with the definition\n# of "Color" above, mixing global and instance symbols.\nnamespace Color {\n  def new(r int, g int, b int) Color {\n    return new(r, g, b, 255)\n  }\n\n  # The name "new" is not a keyword, so any function can\n  # use that name. These functions here are just regular\n  # global functions.\n  def new(r int, g int, b int, a int) Color {\n    return (r | g << 8 | b << 16 | a << 24) as Color\n  }\n\n  # Skew supports overloading functions by both argument\n  # count and argument type.\n  def new(r double, g double, b double, a double) Color {\n    return new(_clamp(r), _clamp(g), _clamp(b), _clamp(a))\n  }\n\n  # Symbols that start with "_" have protected access and\n  # can only be used from within the type that they are\n  # declared in.\n  def _clamp(v double) int {\n    return v < 0 ? 0 : v >= 1 ? 255 : (v * 256) as int\n  }\n\n  # These will be constant-folded at compile time into\n  # a single integer value each.\n  const RED = new(255, 0, 0)\n  const GREEN = new(0, 255, 0)\n  const BLUE = new(0, 0, 255)\n}\n\n@entry\ndef main {\n  var color = Color.new(1, 2, 3)\n  var choice = (Math.random * 4) as int\n\n  # This could also have used "color = Color.RED" but\n  # the type name before the dot can be omitted when\n  # it can be automatically inferred from context.\n  switch choice {\n    case 1 { color = .RED }\n    case 2 { color = .GREEN }\n    case 3 { color = .BLUE }\n  }\n\n  console.log(color.toCSS)\n}\n\n# Declaring something with the "dynamic" type is a quick\n# way to reference an external API without stubbing out\n# all of the type declarations. This is a special type\n# that\'s a hole in the type system (anything is allowed).\n@import\nconst console dynamic\n';
+  var EXAMPLE_RAYTRACER = '# This is a rough port of the raytracer example\n# from http://www.typescriptlang.org/Playground\n\nnamespace Math {\n  def trunc(x double) int {\n    return x as int\n  }\n}\n\ndef render(width int, height int, pixels Int32Array) {\n  var scene = Scene.new(\n    Camera.new(Vector.new(3, 2, 4),\n    Vector.new(-1, 0.5, 0)))\n\n  scene.elements = [\n    Plane.new(\n      Checkerboard.new,\n      Vector.new(0, 1, 0),\n      0),\n    Sphere.new(\n      Shiny.new,\n      Vector.new(0, 1, -0.25),\n      1),\n    Sphere.new(\n      Shiny.new,\n      Vector.new(-1, 0.5, 1.5),\n      0.5),\n  ]\n\n  scene.lights = [\n    Light.new(\n      Vector.new(-2, 2.5, 0),\n      Vector.new(0.49, 0.07, 0.07)),\n    Light.new(\n      Vector.new(1.5, 2.5, 1.5),\n      Vector.new(0.07, 0.07, 0.49)),\n    Light.new(\n      Vector.new(1.5, 2.5, -1.5),\n      Vector.new(0.07, 0.49, 0.071)),\n    Light.new(\n      Vector.new(0, 3.5, 0),\n      Vector.new(0.21, 0.21, 0.35)),\n  ]\n\n  var i = 0\n  for y in 0..height {\n    var screenY = (y * 2.0 + 1 - height) / width\n    for x in 0..width {\n      var screenX = (x * 2.0 + 1 - width) / width\n      pixels[i] = scene.trace2D(screenX, -screenY).pack\n      i++\n    }\n  }\n}\n\nclass Vector {\n  const x double\n  const y double\n  const z double\n\n  def *(s double) Vector {\n    return Vector.new(x * s, y * s, z * s)\n  }\n\n  def /(s double) Vector {\n    return self * (1 / s)\n  }\n\n  def +(v Vector) Vector {\n    return Vector.new(x + v.x, y + v.y, z + v.z)\n  }\n\n  def -(v Vector) Vector {\n    return Vector.new(x - v.x, y - v.y, z - v.z)\n  }\n\n  def *(v Vector) Vector {\n    return Vector.new(x * v.x, y * v.y, z * v.z)\n  }\n\n  def cross(v Vector) Vector {\n    return Vector.new(\n      y * v.z - z * v.y,\n      z * v.x - x * v.z,\n      x * v.y - y * v.x)\n  }\n\n  def dot(v Vector) double {\n    return x * v.x + y * v.y + z * v.z\n  }\n\n  def length double {\n    return Math.sqrt(dot(self))\n  }\n\n  def unit Vector {\n    return self / length\n  }\n\n  def reflectAbout(n Vector) Vector {\n    return self - n * (2 * dot(n))\n  }\n\n  def pack int {\n    return\n      clamp(x) |\n      clamp(y) << 8 |\n      clamp(z) << 16 |\n      0xFF000000\n  }\n}\n\nnamespace Vector {\n  def clamp(x double) int {\n    if x < 0 { return 0 }\n    if x > 1 { return 255 }\n    return Math.trunc(255.999 * x)\n  }\n}\n\nnamespace Colors {\n  const WHITE = Vector.new(1, 1, 1)\n  const BLACK = Vector.new(0, 0, 0)\n  const GRAY = Vector.new(0.5, 0.5, 0.5)\n}\n\nclass Light {\n  var point Vector\n  var color Vector\n}\n\nclass Intersection {\n  var t double\n  var element Element\n}\n\nclass SurfaceInfo {\n  var diffuse Vector\n  var specular Vector\n  var reflect double\n  var roughness double\n}\n\ninterface Surface {\n  def infoAt(point Vector) SurfaceInfo\n}\n\nclass Checkerboard :: Surface {\n  def infoAt(point Vector) SurfaceInfo {\n    if ((Math.trunc(point.x) ^ Math.trunc(point.z)) & 1) != 0 {\n      return WHITE_INFO\n    }\n    return BLACK_INFO\n  }\n}\n\nnamespace Checkerboard {\n  const WHITE_INFO = SurfaceInfo.new(\n    Colors.WHITE, Colors.WHITE, 0.1, 150)\n  const BLACK_INFO = SurfaceInfo.new(\n    Colors.BLACK, Colors.WHITE, 0.7, 150)\n}\n\nclass Shiny :: Surface {\n  def infoAt(point Vector) SurfaceInfo {\n    return INFO\n  }\n}\n\nnamespace Shiny {\n  const INFO = SurfaceInfo.new(\n    Colors.WHITE, Colors.GRAY, 0.7, 250)\n}\n\nclass Element {\n  var surface Surface\n\n  def intersect(origin Vector, ray Vector) Intersection\n  def normalAt(point Vector) Vector\n}\n\nclass Plane : Element {\n  var normal Vector\n  var offset double\n\n  over intersect(origin Vector, ray Vector) Intersection {\n    var t = -(normal.dot(origin) + offset) / normal.dot(ray)\n    if t > 0 {\n      return Intersection.new(t, self)\n    }\n    return null\n  }\n\n  over normalAt(point Vector) Vector {\n    return Vector.new(0, 1, 0)\n  }\n}\n\nclass Sphere : Element {\n  var center Vector\n  var radius double\n\n  over intersect(origin Vector, ray Vector) Intersection {\n    var offset = origin - center\n    var a = ray.dot(ray)\n    var b = 2 * ray.dot(offset)\n    var c = offset.dot(offset) - radius * radius\n    var discriminant = b * b - 4 * a * c\n    if discriminant > 0 {\n      var t = (-b - Math.sqrt(discriminant)) / (2 * a)\n      if t > 0 {\n        return Intersection.new(t, self)\n      }\n    }\n    return null\n  }\n\n  over normalAt(point Vector) Vector {\n    return (point - center) / radius\n  }\n}\n\nclass Camera {\n  var point Vector\n  var forward Vector\n  var right Vector\n  var up Vector\n\n  def new(point Vector, lookAt Vector) {\n    self.point = point\n    forward = (lookAt - point).unit\n    right = forward.cross(Vector.new(0, -1, 0)).unit\n    up = forward.cross(right).unit\n  }\n}\n\nclass Scene {\n  var elements List<Element> = []\n  var lights List<Light> = []\n  var camera Camera\n\n  def intersect(origin Vector, ray Vector, ignore Element) Intersection {\n    var closest Intersection = null\n    for element in elements {\n      if element != ignore {\n        var hit = element.intersect(origin, ray)\n        if hit != null && (closest == null || hit.t < closest.t) {\n          closest = hit\n        }\n      }\n    }\n    return closest\n  }\n\n  def trace3D(origin Vector, ray Vector, ignore Element, depth int) Vector {\n    var hit = intersect(origin, ray, ignore)\n    if hit == null {\n      return Colors.BLACK\n    }\n\n    var point = origin + ray * hit.t\n    var normal = hit.element.normalAt(point)\n    var reflected = ray.reflectAbout(normal)\n    var info = hit.element.surface.infoAt(point)\n    var color = Colors.BLACK\n\n    for light in lights {\n      var delta = light.point - point\n\n      var shadow = intersect(point, delta, hit.element)\n      if shadow != null && shadow.t < 1 {\n        continue\n      }\n      delta = delta.unit\n\n      # Diffuse\n      var weight = Math.max(0, delta.dot(normal))\n      color = color + light.color * info.diffuse * weight\n\n      # Specular\n      weight = Math.pow(Math.max(0, delta.dot(reflected)), info.roughness)\n      color = color + light.color * info.specular * weight\n    }\n\n    # Reflection\n    if depth > 0 {\n      var recursive = trace3D(point, reflected, hit.element, depth - 1)\n      color = color + recursive * info.reflect\n    }\n\n    return color\n  }\n\n  def trace2D(x double, y double) Vector {\n    var ray = camera.forward + camera.right * x + camera.up * y\n    return trace3D(camera.point, ray.unit, null, 5)\n  }\n}\n\n@entry\ndef main {\n  var canvas = document.createElement("canvas")\n  var context = canvas.getContext("2d")\n  var width = 640\n  var height = 480\n  var imageData = context.createImageData(width, height)\n  canvas.width = width\n  canvas.height = height\n  render(width, height, Int32Array.new(imageData.data.buffer))\n  context.putImageData(imageData, 0, 0)\n  document.body.appendChild(canvas)\n}\n\n@import\nclass Int32Array {\n  def new(length int)\n  def []=(index int, value int)\n}\n\n@import\nvar document dynamic\n';
+  var EXAMPLE_TYPE_WRAPPING = '# Type wrapping allows for objects to be implemented\n# directly in terms of other objects without any extra\n# allocation at runtime. Here a 32-bit integer is\n# wrapped in a nice object-oriented RGBA color API.\n# Wrapped types can be casted back and forth with their\n# underlying type using the "as" casting operator.\ntype Color : int {\n  def r int { return (self as int) & 255 }\n  def g int { return ((self as int) >> 8) & 255 }\n  def b int { return ((self as int) >> 16) & 255 }\n  def a int { return (self as int) >>> 24 }\n\n  def toCSS string {\n    return "rgba(" +\n      r.toString + ", " +\n      g.toString + ", " +\n      b.toString + ", " +\n      (a / 255.0).toString +\n    ")"\n  }\n}\n\n# This namespace automatically merges with the definition\n# of "Color" above, mixing global and instance symbols.\nnamespace Color {\n  def new(r int, g int, b int) Color {\n    return new(r, g, b, 255)\n  }\n\n  # The name "new" is not a keyword, so any function can\n  # use that name. These functions here are just regular\n  # global functions.\n  def new(r int, g int, b int, a int) Color {\n    return (r | g << 8 | b << 16 | a << 24) as Color\n  }\n\n  # Skew supports overloading functions by both argument\n  # count and argument type.\n  def new(r double, g double, b double, a double) Color {\n    return new(_clamp(r), _clamp(g), _clamp(b), _clamp(a))\n  }\n\n  # Symbols that start with "_" have protected access and\n  # can only be used from within the type that they are\n  # declared in.\n  def _clamp(v double) int {\n    return v < 0 ? 0 : v >= 1 ? 255 : (v * 256) as int\n  }\n\n  # These will be constant-folded at compile time into\n  # a single integer value each.\n  const RED = new(255, 0, 0)\n  const GREEN = new(0, 255, 0)\n  const BLUE = new(0, 0, 255)\n}\n\n@entry\ndef main {\n  for i in 0..32 {\n    var color = Color.new(1, 2, 3)\n    var choice = (Math.random * 4) as int\n\n    # This could also have used "color = Color.RED" but\n    # the type name before the dot can be omitted when\n    # it can be automatically inferred from context.\n    switch choice {\n      case 1 { color = .RED }\n      case 2 { color = .GREEN }\n      case 3 { color = .BLUE }\n    }\n\n    document.write(color.toCSS + "\n")\n  }\n}\n\n# Declaring something with the "dynamic" type is a quick\n# way to reference an external API without stubbing out\n# all of the type declarations. This is a special type\n# that\'s a hole in the type system (anything is allowed).\n@import\nconst document dynamic\n';
 
   function ApiWorker() {
     var self = this;
@@ -83,6 +83,8 @@
   var output = document.querySelector('.output pre');
   var currentTarget = 'js';
   var isRelease = true;
+  var editButton = null;
+  var runButton = null;
 
   translationWorker.onCompile = function(data) {
     var html = escapeForHTML(data.log.text);
@@ -171,7 +173,6 @@
   SkewMode.prototype = new BaseMode;
 
   SkewMode.prototype.getTokenizer = function() {
-    var isEntityKeyword = /^(?:catch|class|const|def|enum|for|interface|namespace|over|var)$/;
     var isKeyword = /^(?:as|break|case|catch|class|const|continue|def|default|else|enum|false|finally|for|if|in|interface|is|namespace|null|over|return|self|super|switch|throw|true|try|var|while)$/;
     var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
     var self = this;
@@ -181,7 +182,6 @@
         var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|#.*|"(?:[^"\\]|\\.)*")/g;
         var tokens = [];
         var previous = 0;
-        var wasEntityKeyword = false;
 
         while (true) {
           regex.lastIndex = previous;
@@ -204,12 +204,10 @@
               value[0] === '#' ? 'comment' :
               value[0] === '"' ? 'string' :
               isKeyword.test(value) ? 'keyword' :
-              wasEntityKeyword && isIdentifier.test(value) ? 'entity' :
               'text',
             value: value,
           });
 
-          wasEntityKeyword = isEntityKeyword.test(value);
           previous = match.index + value.length;
         }
 
@@ -282,7 +280,6 @@
   };
 
   function getJavaScriptTokenizer() {
-    var isEntityKeyword = /^(?:function|var)$/;
     var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|import|in|instanceof|let|new|null|return|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)$/;
     var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
     var self = this;
@@ -292,7 +289,6 @@
         var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
         var tokens = [];
         var previous = 0;
-        var wasEntityKeyword = false;
 
         while (true) {
           regex.lastIndex = previous;
@@ -315,12 +311,10 @@
               value.slice(0, 2) === '//' ? 'comment' :
               '\'"'.indexOf(value[0]) >= 0 ? 'string' :
               isKeyword.test(value) ? 'keyword' :
-              wasEntityKeyword && isIdentifier.test(value) ? 'entity' :
               'text',
             value: value,
           });
 
-          wasEntityKeyword = isEntityKeyword.test(value);
           previous = match.index + value.length;
         }
 
@@ -506,6 +500,7 @@
     currentTarget = target;
     isRelease = shouldBeRelease;
     document.querySelector('.compiler-target').textContent = name;
+    runButton.style.visibility = target === 'js' ? 'visible' : 'hidden';
     update();
   }
 
@@ -569,7 +564,9 @@
     };
     animate();
 
-    [].forEach.call(document.querySelectorAll('.expand'), function(element) {
+    // This uses <button> instead of <a> because people try to open links in
+    // a new tab. Using buttons avoids this while still being accessible.
+    [].forEach.call(document.querySelectorAll('.expandable button'), function(element) {
       var isVisible = false;
       var reveal = element.nextElementSibling;
       var style = reveal.style;
@@ -597,6 +594,10 @@
       style.display = 'block';
       style.height = 0;
 
+      element.onmousedown = function(e) {
+        e.preventDefault();
+      };
+
       element.onclick = function() {
         isVisible = !isVisible;
 
@@ -611,6 +612,7 @@
         animationStart = now();
         animationDuration = 100 + Math.min(1, height / 1000) * 400;
         style.height = sourceHeight + 'px';
+        element.parentNode.classList.toggle('expanded', isVisible);
       };
     });
 
@@ -622,6 +624,11 @@
     // Only enable the menus when the editor is also active
     [].forEach.call(document.querySelectorAll('h2 a'), function(element) {
       element.classList.add('enabled');
+      element.onkeydown = function(e) {
+        if (e.which === 27) {
+          element.blur();
+        }
+      };
       element.onmousedown = function(e) {
         if (document.activeElement === element) {
           element.blur();
@@ -654,13 +661,19 @@
     editor.setShowPrintMargin(false);
     editor.on('change', update);
 
-    var tryButton = document.querySelector('.try-button');
-    tryButton.onclick = function() {
+    editButton = document.querySelector('.edit.button');
+    runButton = document.querySelector('.run.button');
+    editButton.onclick = function() {
       editor.focus();
-      editor.selectAll();
-      tryButton.style.visibility = 'hidden';
+      var lastRow = editor.session.getLength() - 1;
+      editor.selection.moveTo(lastRow, editor.session.getLine(lastRow).length);
+      editor.selection.selectTo(0, 0);
     };
-    tryButton.style.visibility = 'visible';
+    runButton.onclick = function(e) {
+      open('', '', 'width=660,height=500').document.write('<pre><script>' + output.textContent + '</script></pre>');
+    };
+    editButton.style.visibility = 'visible';
+    runButton.style.visibility = 'visible';
 
     loadTooltips(editor);
     update();
@@ -670,8 +683,8 @@
     document.getElementById('example-raytracer').onmousedown = function() { editor.setValue(EXAMPLE_RAYTRACER, -1); };
     document.getElementById('example-type-wrapping').onmousedown = function() { editor.setValue(EXAMPLE_TYPE_WRAPPING, -1); };
 
-    document.getElementById('target-javascript-debug').onmousedown = function() { changeTarget('js', false, 'JavaScript (Debug)'); };
-    document.getElementById('target-javascript-release').onmousedown = function() { changeTarget('js', true, 'JavaScript (Release)'); };
+    document.getElementById('target-javascript-debug').onmousedown = function() { changeTarget('js', false, 'JS (Debug)'); };
+    document.getElementById('target-javascript-release').onmousedown = function() { changeTarget('js', true, 'JS (Release)'); };
     document.getElementById('target-csharp').onmousedown = function() { changeTarget('c#', false, 'C#'); };
   }
 
