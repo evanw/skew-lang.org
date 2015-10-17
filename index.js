@@ -398,7 +398,7 @@
     var isVisible = false;
     var tooltip = document.createElement('div');
     var latestQueryPosition = null;
-    var symbolRange = null;
+    var tooltipRange = null;
 
     function showTooltip(line, column, html) {
       clearTimeout(timeout);
@@ -417,7 +417,7 @@
       if (!isVisible) return;
       tooltip.style.display = 'none';
       isVisible = false;
-      symbolRange = null;
+      tooltipRange = null;
     }
 
     function isPositionInRange(position, range) {
@@ -429,20 +429,8 @@
     function checkTooltip(e) {
       var renderer = editor.renderer;
       var position = renderer.pixelToScreenCoordinates(e.clientX, e.clientY);
-      var diagnostics = skewMode.diagnosticsByLine[position.row] || [];
 
-      for (var i = 0; i < diagnostics.length; i++) {
-        var diagnostic = diagnostics[i];
-        var range = diagnostic.range;
-        if (isPositionInRange(position, range)) {
-          timeout = setTimeout(function() {
-            showTooltip(range.start.line, range.start.column, escapeForHTML(diagnostic.text));
-          }, isVisible ? 0 : 250);
-          return;
-        }
-      }
-
-      if (symbolRange !== null && isPositionInRange(position, symbolRange)) {
+      if (tooltipRange !== null && isPositionInRange(position, tooltipRange)) {
         return;
       }
 
@@ -461,12 +449,11 @@
     }
 
     tooltipWorker.onTooltipQuery = function(data) {
-      var symbol = data.symbol;
-      symbolRange = null;
-      if (symbol !== null && symbol.range !== null && isPositionInRange(latestQueryPosition, symbol.range)) {
-        var start = symbol.range.start;
-        showTooltip(start.line, start.column, tokenizeToHTML(skewTokenizer, symbol.tooltip));
-        symbolRange = symbol.range;
+      tooltipRange = null;
+      if (data.tooltip !== null && isPositionInRange(latestQueryPosition, data.range)) {
+        tooltipRange = data.range;
+        showTooltip(tooltipRange.start.line, tooltipRange.start.column,
+          data.symbol !== null ? tokenizeToHTML(skewTokenizer, data.tooltip) : escapeForHTML(data.tooltip));
       }
     };
 

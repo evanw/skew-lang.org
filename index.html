@@ -32,20 +32,20 @@
           <div class="editor-wrapper">
             <pre id="editor"><span class="ace_comment"># Imported declarations are just for type checking</span>
 @import
-<span class="ace_keyword">namespace</span> <span class="ace_entity">document</span> {
-  <span class="ace_keyword">def</span> <span class="ace_entity">write</span>(text string)
+<span class="ace_keyword">namespace</span> document {
+  <span class="ace_keyword">def</span> write(text string)
 }
 
 <span class="ace_comment"># The compiler inlines this function in release mode</span>
-<span class="ace_keyword">def</span> <span class="ace_entity">mod</span>(i int, n int, text string) string {
+<span class="ace_keyword">def</span> mod(i int, n int, text string) string {
   <span class="ace_keyword">return</span> i % n == 0 ? text : <span class="ace_string">""</span>
 }
 
 <span class="ace_comment"># Execution starts at the entry point</span>
 @entry
-<span class="ace_keyword">def</span> <span class="ace_entity">fizzBuzz</span> {
-  <span class="ace_keyword">for</span> <span class="ace_entity">i</span> <span class="ace_keyword">in</span> 1..101 {
-    <span class="ace_keyword">var</span> <span class="ace_entity">text</span> = mod(i, 3, <span class="ace_string">"Fizz"</span>) + mod(i, 5, <span class="ace_string">"Buzz"</span>)
+<span class="ace_keyword">def</span> fizzBuzz {
+  <span class="ace_keyword">for</span> i <span class="ace_keyword">in</span> 1..101 {
+    <span class="ace_keyword">var</span> text = mod(i, 3, <span class="ace_string">"Fizz"</span>) + mod(i, 5, <span class="ace_string">"Buzz"</span>)
     document.write((text == <span class="ace_string">""</span> ? i.toString : text) + <span class="ace_string">"\n"</span>)
   }
 }</pre>
