@@ -78,7 +78,7 @@
           It can be used for real things (the compiler is written in itself) but the language is not completely stable yet.
         </p>
 
-        <h3>What is it?</h3>
+        <h3 id="what">What is it?</h3>
 
         <p>
           Skew is a programming language for building cross-platform software.
@@ -647,7 +647,7 @@ def demo {
           </li>
         </ul>
 
-        <h3>Why use it?</h3>
+        <h3 id="why">Why use it?</h3>
 
         <p>
           The intent is to use this language for the platform-independent stuff in an application and to use the language native to the target platform for the platform-specific stuff.
@@ -729,7 +729,7 @@ def demo {
           </li>
         </ul>
 
-        <h3>Installation</h3>
+        <h3 id="start">Getting Started</h3>
 
         <p>
           The compiler is currently published on <a href="https://www.npmjs.com/package/skew">npm</a>, the package manager for <a href="https://nodejs.org/">node</a>.
@@ -741,19 +741,182 @@ def demo {
           Run "skewc --help" to see a list of all available command-line flags.
           Example usage:
         </p>
-        <pre>skewc in.sk --target=js --output-file=out.js --release</pre>
+        <pre>skewc src/*.sk --output-file=compiled.js --target=js --release</pre>
         <p>
-          The package also contains a simple API for the compiler:
+          Simple examples to start from:
         </p>
-        <pre class="js">var Skew = require('skew');
-var result = Skew.compile({
-  inputs: [{
-    name: '&lt;stdin>',
-    contents: '@entry\ndef main int {\n  var foo = 0\n  return 0\n}\n'
-  }],
-  target: 'js',
-  release: true
-});</pre>
+        <ul>
+          <li class="expandable">
+            <button>Example browser app</button>
+            <div class="reveal">
+              <p>
+                Create a file called "sparks.sk" that looks like this:
+              </p>
+              <pre class="skew">@entry
+def main {
+  var canvas = document.createElement("canvas")
+  var context = canvas.getContext("2d")
+  var sparks List&lt;Spark> = []
+  var tick fn()
+
+  document.onmousemove = (e dynamic) => {
+    sparks.append(Spark.new(
+      e.pageX - canvas.offsetLeft,
+      e.pageY - canvas.offsetTop,
+      Math.random * 20 - 10,
+      Math.random * -40))
+  }
+
+  tick = => {
+    canvas.width = 800
+    canvas.height = 600
+    canvas.style.background = "#EEE"
+    context.beginPath()
+    sparks.removeIf(s => {
+      s.x += s.vx / 2
+      s.y += s.vy / 2
+      s.vy += 3
+      s.time -= 1.0 / 60
+      context.moveTo(s.x, s.y)
+      context.lineTo(s.x + s.vx, s.y + s.vy)
+      return s.time &lt; 0
+    })
+    context.stroke()
+    requestAnimationFrame(tick)
+  }
+
+  document.body.appendChild(canvas)
+  tick()
+}
+
+class Spark {
+  var x double
+  var y double
+  var vx double
+  var vy double
+  var time = 1.0
+}
+
+@import {
+  const document dynamic
+  def requestAnimationFrame(callback fn())
+}</pre>
+              <p>
+                Invoke the compiler to generate JavaScript code.
+                Any compilation errors will show up here:
+              </p>
+              <pre>skewc sparks.sk --output-file=sparks.js --target=js</pre>
+              <p>
+                Create another file called "index.html" to serve the compiled code:
+              </p>
+              <pre class="skew">&lt;body>&lt;/body>
+&lt;script src="sparks.js">&lt;/script></pre>
+              <p>
+                That's it!
+                Open "index.html" in a browser to see the app.
+                To build a production-ready version of your app, just add the "--release" flag to the end of the compiler invocation:
+              </p>
+              <pre>skewc sparks.sk --output-file=sparks.js --target=js --release</pre>
+            </div>
+          </li>
+
+          <li class="expandable">
+            <button>Example command-line app</button>
+            <div class="reveal">
+              <p>
+                Create a file called "calculator.sk" that looks like this:
+              </p>
+              <pre class="skew">@entry
+def main {
+  var example = "(1 + 2) * 3"
+  var readline = require("readline").createInterface({
+    "input": process.stdin,
+    "output": process.stdout,
+  })
+  var question fn()
+  var answer = (text string) => {
+    var tokens = text.split(RegExp.new("(\\d+|[()+\\-*/])"))
+    var output List&lt;double> = []
+    var stack List&lt;int> = []
+    var priority = {'+': 1, '-': 1, '*': 2, '/': 2, '(': 3}
+    var binary = (callback fn(double, double) double) => {
+      var right = output.takeLast
+      var left = output.takeLast
+      output.append(callback(left, right))
+    }
+    tokens.append("\0")
+    for i in 0..tokens.count {
+      if i % 2 == 0 { continue }
+      var op = tokens[i][0]
+      switch op {
+        case '+', '-', '*', '/', '(', ')', '\0' {
+          var p = priority.get(op, 0)
+          while !stack.isEmpty &amp;&amp; priority.get(stack.last, 3) > p {
+            switch stack.last {
+              case '+' { binary((a, b) => a + b) }
+              case '-' { binary((a, b) => a - b) }
+              case '*' { binary((a, b) => a * b) }
+              case '/' { binary((a, b) => a / b) }
+              case '(' { if op != ')' { break } }
+              default { break }
+            }
+            if stack.takeLast == '(' { break }
+          }
+          if op != ')' &amp;&amp; op != '\0' { stack.append(op) }
+        }
+        default { output.append(parseFloat(tokens[i])) }
+      }
+    }
+    console.log("answer: " + output.first.toString)
+    question()
+  }
+  question = => readline.question("> ", answer)
+  console.log("> " + example)
+  answer(example)
+}
+
+@import {
+  const console dynamic
+  const process dynamic
+  const RegExp dynamic
+  def parseFloat(text string) double
+  def require(name string) dynamic
+}</pre>
+              <p>
+                Invoke the compiler to generate JavaScript code.
+                Any compilation errors will show up here:
+              </p>
+              <pre>skewc calculator.sk --output-file=calculator.js --target=js</pre>
+              <p>
+                That's it!
+                Run "node calculator.js" to see the app.
+              </p>
+            </div>
+          </li>
+        </ul>
+        <p>
+          All of these examples use the "dynamic" type for simplicity, but you'll likely want type imports for real work.
+          Skew will eventually have a package manager and type imports will live there.
+          I've put some <a href="https://github.com/evanw/skew-imports/tree/master/html5">HTML5 type imports</a> on GitHub for convenience in the meantime.
+        </p>
+        <p>
+          IDE support:
+        </p>
+        <ul class="padded">
+          <li>
+            <a href="http://www.sublimetext.com/">Sublime Text</a><br>
+            Follow <a href="https://github.com/evanw/skew/tree/master/extras/Sublime%20Text">these instructions</a> to install syntax highlighting.
+          </li>
+          <li>
+            <a href="https://atom.io/">Atom</a><br>
+            Install the <a href="https://atom.io/packages/skew">skew</a> package for syntax highlighting.
+            This also adds rudimentary IDE support that includes inline errors and type tooltips on hover.
+            Use the
+            <script>document.write(navigator.platform === 'MacIntel' ? '"\u2318;"' : '"Ctrl+;"')</script>
+            shortcut to open the diagnostics panel.
+            IDE features currently only update when the file is saved.
+          </li>
+        </ul>
       </div>
     </section>
 
