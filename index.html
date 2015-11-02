@@ -77,7 +77,7 @@
       <div class="inner">
         <p class="warning">
           Warning: This is a hobby project and is still evolving rapidly.
-          It can be used for real things (the compiler is written in itself) but the language is not completely stable yet.
+          It can be used for real things (the compiler is written in itself) but the language and standard library are not completely stable yet.
         </p>
 
         <h3 id="what">What is it?</h3>
@@ -917,6 +917,465 @@ def main {
             <script>document.write(navigator.platform === 'MacIntel' ? '"\u2318;"' : '"Ctrl+;"')</script>
             shortcut to open the diagnostics panel.
             IDE features currently only update when the file is saved.
+          </li>
+        </ul>
+
+        <h3 id="docs">Documentation</h3>
+
+        <p>
+          Standard library:
+        </p>
+        <ul>
+          <li class="expandable">
+            <button>bool</button>
+            <div class="reveal">
+              <p>
+                There are two bool values, "true" and "false".
+              </p>
+              <pre class="skew">class bool {
+  def ! bool
+  def toString string
+}</pre>
+              <p>
+                The "&amp;&amp;" and "||" operators also operate on bool values but cannot described using imported functions due to their special short-circuiting behavior.
+              </p>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>int</button>
+            <div class="reveal">
+              <p>
+                An int is a signed 32-bit non-nullable integer.
+                The supported bases are binary (0b101), octal (0o123), decimal (123), and hex (0xABC).
+              </p>
+              <pre class="skew">class int {
+  def + int
+  def ++
+  def - int
+  def --
+  def ~ int
+
+  def %(x int) int
+  def &amp;(x int) int
+  def *(x int) int
+  def +(x int) int
+  def -(x int) int
+  def /(x int) int
+  def **(x int) int # Exponential operator
+  def &lt;&lt;(x int) int
+  def &lt;=>(x int) int # Makes "&lt;", ">", "&lt;=", and ">=" work
+  def >>(x int) int # Signed shift operator
+  def >>>(x int) int # Unsigned shift operator
+  def ^(x int) int
+  def |(x int) int
+
+  def %=(x int)
+  def &lt;=(x int)
+  def *=(x int)
+  def +=(x int)
+  def -=(x int)
+  def /=(x int)
+  def &lt;&lt;=(x int)
+  def >>=(x int) # Signed shift operator
+  def >>>=(x int) # Unsigned shift operator
+  def ^=(x int)
+  def |=(x int)
+
+  def toString string
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>double</button>
+            <div class="reveal">
+              <p>
+                A double is a 64-bit non-nullable floating-point number.
+                A number literal must have a "." in it to be a double, otherwise it's an int.
+                The non-finite double constants are "Math.NAN" and "Math.INFINITY".
+              </p>
+              <pre class="skew">class double {
+  def + double
+  def ++
+  def - double
+  def --
+
+  def *(x double) double
+  def +(x double) double
+  def -(x double) double
+  def /(x double) double
+  def **(x double) double # Exponential operator
+  def &lt;=>(x double) int # Makes "&lt;", ">", "&lt;=", and ">=" work
+
+  def *=(x double)
+  def +=(x double)
+  def -=(x double)
+  def /=(x double)
+
+  def isFinite bool
+  def isNaN bool
+  def toString string
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>string</button>
+            <div class="reveal">
+              <p>
+                A string is an immutable sequence of unicode code units.
+                Multi-line strings are allowed.
+                String literals must be double-quoted (single quotes are for C-style character literals, which turn into an int with the unicode code point for that character).
+                Valid escape sequences are "\0", "\r", "\n", "\t", "\e", "\\", "\"", "\'", and hex-style "\xFF".
+              </p>
+              <p>
+                Strings are stored using the natural string encoding for the target language.
+                For example, JavaScript uses UTF-16 and C++ uses UTF-8.
+                All indices are in terms of code units since code unit access can be done in constant time.
+                To work in platform-independent code points instead, use the code point APIs and Unicode.StringIterator.
+              </p>
+              <pre class="skew">class string {
+  def +(x string) string
+  def +=(x string)
+  def &lt;=>(x string) int # Makes "&lt;", ">", "&lt;=", and ">=" work
+
+  def count int # Counts code units
+  def in(x string) bool # Makes the "x in y" syntax work
+  def indexOf(x string) int # Index is in code units
+  def lastIndexOf(x string) int # Index is in code units
+  def startsWith(x string) bool
+  def endsWith(x string) bool
+
+  def [](x int) int # Returns a single code unit
+  def get(x int) string # Returns a single code unit
+  def slice(start int) string # Slices code units
+  def slice(start int, end int) string # Slices code units
+  def codePoints List&lt;int>
+  def codeUnits List&lt;int>
+
+  def split(x string) List&lt;string>
+  def join(x List&lt;string>) string
+  def repeat(x int) string
+  def replaceAll(before string, after string) string
+
+  def toLowerCase string
+  def toUpperCase string
+}
+
+namespace string {
+  def fromCodePoint(x int) string
+  def fromCodePoints(x List&lt;int>) string
+  def fromCodeUnit(x int) string
+  def fromCodeUnits(x List&lt;int>) string
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>StringBuilder</button>
+            <div class="reveal">
+              <p>
+                In certain language targets, the "+=" operator on strings can be extremely inefficient.
+                This API provides an efficient way to construct large strings.
+              </p>
+              <pre class="skew">class StringBuilder {
+  def new
+  def append(x string)
+  def toString string
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>Box&lt;T></button>
+            <div class="reveal">
+              <p>
+                A generic wrapper object for non-nullable types (bool, int, and double) to make them nullable.
+                Also useful for nullable types to indicate the absence of a value when null is a valid value.
+              </p>
+              <pre class="skew">class Box&lt;T> {
+  var value T
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>List&lt;T></button>
+            <div class="reveal">
+              <p>
+                Provides a generic array that stores all items linearly in memory.
+              </p>
+              <pre class="skew">class List&lt;T> {
+  def new
+  def [...](x T) List&lt;T> # Makes the [1, 2, 3] syntax work
+
+  def [](x int) T
+  def []=(x int, y T)
+
+  def count int
+  def isEmpty bool
+  def resize(count int, defaultValue T)
+
+  def appendOne(x T) # Only append if the value isn't present
+  def append(x T)
+  def append(x List&lt;T>)
+
+  def prepend(x T)
+  def prepend(x List&lt;T>)
+
+  def insert(x int, value T)
+  def insert(x int, values List&lt;T>)
+
+  def removeAll(x T)
+  def removeAt(x int)
+  def removeDuplicates
+  def removeFirst
+  def removeIf(x fn(T) bool)
+  def removeLast
+  def removeOne(x T)
+  def removeRange(start int, end int)
+
+  def takeFirst T
+  def takeLast T
+  def takeRange(start int, end int) List&lt;T>
+
+  def first T
+  def first=(x T)
+  def last T
+  def last=(x T)
+
+  def in(x T) bool # Makes the "x in y" syntax work
+  def indexOf(x T) int
+  def lastIndexOf(x T) int
+
+  def all(x fn(T) bool) bool
+  def any(x fn(T) bool) bool
+  def clone List&lt;T>
+  def each(x fn(T))
+  def equals(x List&lt;T>) bool
+  def filter(x fn(T) bool) List&lt;T>
+  def map&lt;R>(x fn(T) R) List&lt;R>
+  def reverse
+  def shuffle
+  def slice(start int) List&lt;T>
+  def slice(start int, end int) List&lt;T>
+  def sort(x fn(T, T) int)
+  def swap(x int, y int)
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>IntMap&lt;T></button>
+            <div class="reveal">
+              <p>
+                Provides a generic map where reading and writing is done in amortized constant time.
+              </p>
+              <pre class="skew">class IntMap&lt;T> {
+  def new
+  def {...}(key int, value T) IntMap&lt;T> # Makes the {1: 2} syntax work
+
+  def [](key int) T
+  def []=(key int, value T)
+
+  def count int
+  def isEmpty bool
+  def keys List&lt;int>
+  def values List&lt;T>
+
+  def clone IntMap&lt;T>
+  def each(x fn(int, T))
+  def in(key int) bool # Makes the "x in y" syntax work
+  def get(key int, defaultValue T) T
+  def remove(key int)
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>StringMap&lt;T></button>
+            <div class="reveal">
+              <p>
+                Provides a generic map where reading and writing is done in amortized constant time.
+              </p>
+              <pre class="skew">class StringMap&lt;T> {
+  def new
+  def {...}(key string, value T) StringMap&lt;T> # Makes the {"a": "b"} syntax work
+
+  def [](key string) T
+  def []=(key string, value T)
+
+  def count int
+  def isEmpty bool
+  def keys List&lt;string>
+  def values List&lt;T>
+
+  def clone StringMap&lt;T>
+  def each(x fn(string, T))
+  def get(key string, defaultValue T) T
+  def in(key string) bool # Makes the "x in y" syntax work
+  def remove(key string)
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>Math</button>
+            <div class="reveal">
+              <pre class="skew">namespace Math {
+  const E double
+  const INFINITY double
+  const NAN double
+  const PI double
+  const SQRT_2 double
+
+  def abs(x double) double
+  def abs(x int) int
+
+  def acos(x double) double
+  def asin(x double) double
+  def atan(x double) double
+  def atan2(x double, y double) double
+
+  def sin(x double) double
+  def cos(x double) double
+  def tan(x double) double
+
+  def floor(x double) double
+  def ceil(x double) double
+  def round(x double) double
+
+  def exp(x double) double
+  def log(x double) double
+  def pow(x double, y double) double
+  def random double
+  def sqrt(x double) double
+
+  def max(x double, y double) double
+  def max(x int, y int) int
+
+  def min(x double, y double) double
+  def min(x int, y int) int
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>Unicode</button>
+            <div class="reveal">
+              <p>
+                The string type stores unicode code units, not code points.
+                See the documentation of "string" for more information.
+              </p>
+              <pre class="skew">namespace Unicode {
+  enum Encoding {
+    UTF8
+    UTF16
+    UTF32
+  }
+
+  # This is set to the string encoding for the current language target
+  const STRING_ENCODING Encoding
+
+  # This provides an efficient way to iterate over a string and access unicode
+  # code points. Code points must be traversed using iteration because they
+  # are encoded using a variable number of code units in UTF-8 and UTF-16.
+  class StringIterator {
+    var value string
+    var index int
+    var stop int
+
+    def reset(text string, start int)
+    def countCodePointsUntil(stop int) int
+    def nextCodePoint int
+  }
+
+  namespace StringIterator {
+    # This is provided for convenience and can be used to avoid GC churn
+    const INSTANCE StringIterator
+  }
+}
+</pre>
+              <p>
+                Example usage:
+              </p>
+              <pre class="skew">def countCodePointsInString(text string) int {
+  var iterator = Unicode.StringIterator.INSTANCE
+  iterator.reset(text, 0)
+  return iterator.countCodePointsUntil(text.length)
+}
+
+def codePointAtIndex(text string, index int) int {
+  var iterator = Unicode.StringIterator.INSTANCE
+  iterator.reset(text, 0)
+  iterator.countCodePointsUntil(index)
+  return iterator.nextCodePoint
+}</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>Global constants</button>
+            <div class="reveal">
+              <pre class="skew">enum Target {
+  NONE
+  CPLUSPLUS
+  CSHARP
+  JAVASCRIPT
+}
+
+# This is set to the current language target
+const TARGET Target
+
+# This is true when the compiler is passed the "--release" flag
+const RELEASE bool</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>Global functions</button>
+            <div class="reveal">
+              <pre class="skew"># This causes a runtime failure when passed "false". Calls to assert
+# will be completely removed in release mode, so arguments won't
+# be evaluated. This is accomplished with the "@skip" annotation.
+def assert(truth bool)</pre>
+            </div>
+          </li>
+          <li class="expandable">
+            <button>Global annotations</button>
+            <div class="reveal">
+              <p>
+                These annotations trigger special behaviors in the compiler for the symbols they annotate.
+              </p>
+              <pre class="skew"># Using "@alwaysinline" warns if inlining wasn't possible
+def @alwaysinline
+def @neverinline
+
+# These cause warnings when the annotated symbol is used
+def @deprecated
+def @deprecated(message string)
+
+# There can only be one active entry point during compilation. It must take
+# no arguments or take a List&lt;string> and return either nothing or an int.
+def @entry
+
+# Imported code is assumed to exist and will not appear in the compiled result
+def @import
+
+# Exported code isn't dead stripped, minified, or otherwise altered
+def @export
+
+# This influences overload resolution for ambiguous matches
+def @prefer
+
+# Change the name of the annotated symbol during code generation
+def @rename(name string)
+
+# This causes calls to the function to be completely removed after type
+# checking. This means the arguments will not be evaluated at the call site.
+def @skip
+
+# This is meant to be used for other annotations. When those annotations are
+# on a function, "@spreads" causes those annotations to be propagated to
+# other functions when that function is inlined inside them.
+def @spreads
+
+# This causes a C# "using" statement to be emitted when the symbol is used
+def @using(name string)
+
+# This causes a C++ "#include" pragma to be emitted when the symbol is used
+def @include(name string)
+</pre>
+            </div>
           </li>
         </ul>
       </div>
