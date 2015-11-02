@@ -2092,7 +2092,7 @@ namespace string {
               <pre class="skew">def countCodePointsInString(text string) int {
   var iterator = Unicode.StringIterator.INSTANCE
   iterator.reset(text, 0)
-  return iterator.countCodePointsUntil(text.length)
+  return iterator.countCodePointsUntil(text.count)
 }
 
 def codePointAtIndex(text string, index int) int {
