@@ -1092,7 +1092,7 @@ def subtract(a int, b int) {
           </li>
 
           <li class="expandable">
-            <button>Lambdas</button>
+            <button>Lambda expressions</button>
             <div class="reveal">
               <p>
                 Lambda expressions are lexical closures, meaning they have mutable access to the symbols they close over.
@@ -1368,21 +1368,14 @@ def test {
                 The current implementation is pretty simple.
                 There isn't any type inference yet, and also no advanced features like covariant and contravariant conversions.
               </p>
-              <pre class="skew">interface HashCode&lt;K> {
-  def hashCode(key K) int
-  def checkEquality(left K, right K) bool
+              <pre class="skew">class Pair&lt;A, B> {
+  const first A
+  const second B
 }
 
-class DemoMap&lt;K, V> {
-  const hashCode HashCode&lt;K>
-  def get(key K) V
-  def set(key K, value V)
-}
-
-def bulkSet&lt;K, V>(map DemoMap&lt;K, V>, key K, values List&lt;V>) {
-  for value in values {
-    map.set(key, value)
-  }
+@export
+def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
+  return Pair&lt;A, B>.new(first, second)
 }</pre>
             </div>
           </li>
