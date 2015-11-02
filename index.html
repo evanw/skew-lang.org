@@ -21,8 +21,10 @@
               <span class="compiler-example">Skew</span>
               <ol class="menu">
                 <li class="menu-item disabled">Load example:</li>
+                <li class="menu-item" id="example-calculator">Calculator</li>
                 <li class="menu-item" id="example-fizz-buzz">Fizz buzz</li>
                 <li class="menu-item" id="example-raytracer">Raytracer</li>
+                <li class="menu-item" id="example-sparks">Sparks</li>
                 <li class="menu-item" id="example-type-wrapping">Type Wrapping</li>
               </ol>
               <span class="menu-arrow">&#9662;</span>
@@ -768,8 +770,8 @@ def main {
   }
 
   tick = => {
-    canvas.width = 800
-    canvas.height = 600
+    canvas.width = 640
+    canvas.height = 480
     canvas.style.background = "#EEE"
     context.beginPath()
     sparks.removeIf(s => {
