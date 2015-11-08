@@ -67,7 +67,7 @@
             </a>
             <a href="javascript:void 0" class="run button">Run</a>
           </h2>
-          <pre>(<span class="ace_keyword">function</span>(){<span class="ace_keyword">function</span> c(){<span class="ace_keyword">for</span>(<span class="ace_keyword">var</span> a=1;a&lt;101;++a){<span class="ace_keyword">var</span> b=(a%3?<span class="ace_string">''</span>:<span class="ace_string">'Fizz'</span>)+(a%5?<span class="ace_string">''</span>:<span class="ace_string">'Buzz'</span>);document.write((b==<span class="ace_string">''</span>?a.toString():b)+<span class="ace_string">'\n'</span>)}}c()})();</pre>
+          <pre>(<span class="ace_keyword">function</span>(){<span class="ace_keyword">function</span> c(){<span class="ace_keyword">for</span>(<span class="ace_keyword">var</span> a=1;a&lt;101;a=a+1|0){<span class="ace_keyword">var</span> b=(a%3?<span class="ace_string">''</span>:<span class="ace_string">'Fizz'</span>)+(a%5?<span class="ace_string">''</span>:<span class="ace_string">'Buzz'</span>);document.write((b==<span class="ace_string">''</span>?a.toString():b)+<span class="ace_string">'\n'</span>)}}c()})();</pre>
         </div>
         <div class="clearfix"></div>
       </div>
@@ -550,7 +550,7 @@ const console dynamic</pre>
                 The code above becomes this JavaScript code in release mode.
                 Notice how the properties for both "Rect" and "Vector" can reuse the same names because they are two unrelated types:
               </p>
-              <pre class="js">(function(){demo=function(){for(var a=new i(new h(Infinity,Infinity),new h(-Infinity,-Infinity)),b=0;b&lt;100;++b)f(a,Math.random(),Math.random());console.log(e(a))};function e(a){return (a.b.a-a.a.a)*(a.b.b-a.a.b)}function f(c,a,b){c.a.a=Math.min(c.a.a,a),c.a.b=Math.min(c.a.b,b),c.b.a=Math.max(c.b.a,a),c.b.b=Math.max(c.b.b,b)}function h(a,b){this.a=a,this.b=b}function i(a,b){this.a=a,this.b=b}})();</pre>
+              <pre class="js">(function(){demo=function(){for(var a=new i(new h(Infinity,Infinity),new h(-Infinity,-Infinity)),b=0;b&lt;100;b=b+1|0)f(a,Math.random(),Math.random());console.log(e(a))};function e(a){return (a.b.a-a.a.a)*(a.b.b-a.a.b)}function f(c,a,b){c.a.a=Math.min(c.a.a,a),c.a.b=Math.min(c.a.b,b),c.b.a=Math.max(c.b.a,a),c.b.b=Math.max(c.b.b,b)}function h(a,b){this.a=a,this.b=b}function i(a,b){this.a=a,this.b=b}})();</pre>
             </div>
           </li>
 
@@ -1013,7 +1013,7 @@ def value=(x int) {}</pre>
             <button>Loop statements</button>
             <div class="reveal">
               <p>
-                Different loop types:
+                Different loop types that all loop from 0 to 4 inclusive:
               </p>
               <pre class="skew">def test {
   # While loop
@@ -1027,7 +1027,7 @@ def value=(x int) {}</pre>
   for c = 0; c &lt; 5; c++ {}
 
   # For-in loop (currently only for List&lt;T>)
-  for d in [1, 2, 3, 4, 5] {}
+  for d in [0, 1, 2, 3, 4] {}
 }</pre>
               <p>
                 Loop control flow is done using the "break" and "continue" keywords as in C.
@@ -1398,7 +1398,7 @@ class Vector {
   var y double
 
   def -(p Vector) Vector {
-    return Vector.new(x - p.x, y - p.y)
+    return new(x - p.x, y - p.y)
   }
 
   def [](a Axis) double {
@@ -1411,6 +1411,7 @@ class Vector {
   }
 }
 
+@export
 class Player {
   var position Vector
 
@@ -1495,11 +1496,70 @@ def test {
   var map DemoMap = {1: 2, "3": "4"}
 }</pre>
               <p>
+                Mutating operators can be synthesized from non-mutating operators.
+                For example, a type that defines the "+" operator also gets the "+=" and "++" operators automatically:
+              </p>
+              <pre class="skew">@rename("goog.math.Long")
+@import
+class Long {
+  @rename("add")
+  def +(x Long) Long
+
+  @alwaysinline
+  def +(x int) Long { return self + fromInt(x) }
+}
+
+namespace Long {
+  def fromInt(value int) Long
+}
+
+@entry
+def test {
+  var a = Long.fromInt(123)
+  a += Long.fromInt(234)
+  a += 5
+  a++
+}</pre>
+              <p>
                 The "==" and "!=" operators cannot be overloaded since they test for reference equality and need to handle implicit bidirectional type conversions.
                 The "&amp;&amp;" and "||" operators cannot be overloaded because of their special short-circuit evaluation behavior.
                 The "=" operator cannot be overridden since that's too confusing in a language that lacks value types.
                 If the "=" were overridable, objects would then be copied on assignment but would be passed by reference as arguments to function calls.
               </p>
+            </div>
+          </li>
+
+          <li class="expandable">
+            <button>The "?." and "??" operators</button>
+            <div class="reveal">
+              <p>
+                These operators make handling nullable values easier and safer.
+                They are inspired by the same operators from C#.
+                The expression <span class="chunk">"a?.b"</span> is short for <span class="chunk">"a != null ? a.b : null"</span> and the expression <span class="chunk">"a ?? b"</span> is short for <span class="chunk">"a != null ? a : b"</span>.
+                The compiler ensures sub-expressions are only evaluated once.
+              </p>
+              <pre class="skew">class Log {
+  def info(text string) {
+    dynamic.console.log(text)
+  }
+}
+
+def dump(log Log, text string) {
+  log?.info(text ?? "(null)")
+}
+
+@entry
+def test {
+  var log = Log.new
+
+  # Passing null text is fine (prints "(null)" instead)
+  dump(log, "blah")
+  dump(log, null)
+
+  # Passing a null log is fine too (nothing is printed)
+  dump(null, "blah")
+  dump(null, null)
+}</pre>
             </div>
           </li>
 
@@ -1755,6 +1815,7 @@ def main int {
   def +=(x int)
   def -=(x int)
   def /=(x int)
+  def **=(x int) # Exponential operator
   def &lt;&lt;=(x int)
   def >>=(x int) # Signed shift operator
   def >>>=(x int) # Unsigned shift operator
@@ -1791,6 +1852,7 @@ def main int {
   def +=(x double)
   def -=(x double)
   def /=(x double)
+  def **=(x double) # Exponential operator
 
   def isFinite bool
   def isNaN bool
