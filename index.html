@@ -1790,9 +1790,9 @@ def main int {
               </p>
               <pre class="skew">class int {
   def + int
-  def ++
+  def ++ int
   def - int
-  def --
+  def -- int
   def ~ int
 
   def +(x int) int
@@ -1809,18 +1809,18 @@ def main int {
   def |(x int) int
   def ^(x int) int
 
-  def +=(x int)
-  def -=(x int)
-  def /=(x int)
-  def *=(x int)
-  def %=(x int) # Remainder, not modulus (different for negative values)
-  def **=(x int) # Exponential operator
-  def &lt;&lt;=(x int)
-  def >>=(x int) # Signed shift operator
-  def >>>=(x int) # Unsigned shift operator
-  def &amp;=(x int)
-  def |=(x int)
-  def ^=(x int)
+  def +=(x int) int
+  def -=(x int) int
+  def /=(x int) int
+  def *=(x int) int
+  def %=(x int) int # Remainder, not modulus (different for negative values)
+  def **=(x int) int # Exponential operator
+  def &lt;&lt;=(x int) int
+  def >>=(x int) int # Signed shift operator
+  def >>>=(x int) int # Unsigned shift operator
+  def &amp;=(x int) int
+  def |=(x int) int
+  def ^=(x int) int
 
   def toString string
 }</pre>
@@ -1837,9 +1837,9 @@ def main int {
               </p>
               <pre class="skew">class double {
   def + double
-  def ++
+  def ++ double
   def - double
-  def --
+  def -- double
 
   def +(x double) double
   def -(x double) double
@@ -1848,11 +1848,11 @@ def main int {
   def **(x double) double # Exponential operator
   def &lt;=>(x double) int # Makes "&lt;", ">", "&lt;=", and ">=" work
 
-  def +=(x double)
-  def -=(x double)
-  def *=(x double)
-  def /=(x double)
-  def **=(x double) # Exponential operator
+  def +=(x double) double
+  def -=(x double) double
+  def *=(x double) double
+  def /=(x double) double
+  def **=(x double) double # Exponential operator
 
   def isFinite bool
   def isNaN bool
@@ -1878,7 +1878,7 @@ def main int {
               </p>
               <pre class="skew">class string {
   def +(x string) string
-  def +=(x string)
+  def +=(x string) string
   def &lt;=>(x string) int # Makes "&lt;", ">", "&lt;=", and ">=" work
 
   def count int # Counts code units
@@ -1953,7 +1953,7 @@ namespace string {
   def [...](x T) List&lt;T> # Makes the [1, 2, 3] syntax work
 
   def [](x int) T
-  def []=(x int, y T)
+  def []=(x int, y T) T
 
   def count int
   def isEmpty bool
@@ -1983,9 +1983,9 @@ namespace string {
   def takeRange(start int, end int) List&lt;T>
 
   def first T
-  def first=(x T)
+  def first=(x T) T
   def last T
-  def last=(x T)
+  def last=(x T) T
 
   def in(x T) bool # Makes the "x in y" syntax work
   def indexOf(x T) int
@@ -2020,7 +2020,7 @@ namespace string {
   def {...}(key int, value T) IntMap&lt;T> # Makes the {1: 2} syntax work
 
   def [](key int) T
-  def []=(key int, value T)
+  def []=(key int, value T) T
 
   def count int
   def isEmpty bool
@@ -2048,7 +2048,7 @@ namespace string {
   def {...}(key string, value T) StringMap&lt;T> # Makes the {"a": "b"} syntax work
 
   def [](key string) T
-  def []=(key string, value T)
+  def []=(key string, value T) T
 
   def count int
   def isEmpty bool
