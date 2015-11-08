@@ -1795,32 +1795,32 @@ def main int {
   def --
   def ~ int
 
-  def %(x int) int # Remainder, not modulus (different for negative values)
-  def &amp;(x int) int
-  def *(x int) int
   def +(x int) int
   def -(x int) int
+  def *(x int) int
   def /(x int) int
+  def %(x int) int # Remainder, not modulus (different for negative values)
   def **(x int) int # Exponential operator
-  def &lt;&lt;(x int) int
   def &lt;=>(x int) int # Makes "&lt;", ">", "&lt;=", and ">=" work
+  def &lt;&lt;(x int) int
   def >>(x int) int # Signed shift operator
   def >>>(x int) int # Unsigned shift operator
-  def ^(x int) int
+  def &amp;(x int) int
   def |(x int) int
+  def ^(x int) int
 
-  def %=(x int)
-  def &lt;=(x int)
-  def *=(x int)
   def +=(x int)
   def -=(x int)
   def /=(x int)
+  def *=(x int)
+  def %=(x int) # Remainder, not modulus (different for negative values)
   def **=(x int) # Exponential operator
   def &lt;&lt;=(x int)
   def >>=(x int) # Signed shift operator
   def >>>=(x int) # Unsigned shift operator
-  def ^=(x int)
+  def &amp;=(x int)
   def |=(x int)
+  def ^=(x int)
 
   def toString string
 }</pre>
@@ -1841,16 +1841,16 @@ def main int {
   def - double
   def --
 
-  def *(x double) double
   def +(x double) double
   def -(x double) double
+  def *(x double) double
   def /(x double) double
   def **(x double) double # Exponential operator
   def &lt;=>(x double) int # Makes "&lt;", ">", "&lt;=", and ">=" work
 
-  def *=(x double)
   def +=(x double)
   def -=(x double)
+  def *=(x double)
   def /=(x double)
   def **=(x double) # Exponential operator
 
