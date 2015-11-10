@@ -1530,12 +1530,12 @@ def test {
           </li>
 
           <li class="expandable">
-            <button>The "?." and "??" operators</button>
+            <button>The "?.", "??", and "?=" operators</button>
             <div class="reveal">
               <p>
                 These operators make handling nullable values easier and safer.
                 They are inspired by the same operators from C#.
-                The expression <span class="chunk">"a?.b"</span> is short for <span class="chunk">"a != null ? a.b : null"</span> and the expression <span class="chunk">"a ?? b"</span> is short for <span class="chunk">"a != null ? a : b"</span>.
+                The expression <span class="chunk">"a?.b"</span> is short for <span class="chunk">"a != null ? a.b : null"</span>, the expression <span class="chunk">"a ?? b"</span> is short for <span class="chunk">"a != null ? a : b"</span>, and the expression <span class="chunk">"a ?= b"</span> is short for <span class="chunk">"a != null ? a : a = b"</span>.
                 The compiler ensures sub-expressions are only evaluated once.
               </p>
               <pre class="skew">class Log {
@@ -1548,9 +1548,10 @@ def dump(log Log, text string) {
   log?.info(text ?? "(null)")
 }
 
-@entry
-def test {
-  var log = Log.new
+@export
+def test(log Log) {
+  # Create a log if one wasn't passed in
+  log ?= Log.new
 
   # Passing null text is fine (prints "(null)" instead)
   dump(log, "blah")
