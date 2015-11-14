@@ -4,1056 +4,529 @@
     <meta charset="utf8">
     <link rel="stylesheet" href="style.css">
     <title>The Skew Programming Language</title>
-    <meta name="viewport" content="width=450">
+    <meta name="viewport" content="width=device-width">
   </head>
   <body>
     <header>
-      <div class="inner">
-        <h1><b>Skew</b> is a web-first, cross-platform programming language with an optimizing compiler.</h1>
-      </div>
+      <section>
+        <div><h2>Skew</h2></div>
+        <div><a id="nav-try-live" href="javascript:toggleLiveEditor()">Try Live</a></div>
+        <div><a id="nav-getting-started" href="#start">Getting Started</a></div>
+        <div><a id="nav-docs" href="#docs">Docs</a></div>
+        <div><a id="nav-github" href="https://github.com/evanw/skew">GitHub</a></div>
+      </section>
     </header>
 
-    <section class="editor">
-      <div class="inner">
-        <div class="input">
-          <h2>
-            <a href="javascript:void 0" class="dropdown">
-              <span class="compiler-example">Skew</span>
-              <ol class="menu">
-                <li class="menu-item disabled">Load example:</li>
-                <li class="menu-item" id="example-calculator">Calculator</li>
-                <li class="menu-item" id="example-fizz-buzz">Fizz buzz</li>
-                <li class="menu-item" id="example-raytracer">Raytracer</li>
-                <li class="menu-item" id="example-sparks">Sparks</li>
-                <li class="menu-item" id="example-type-wrapping">Type Wrapping</li>
-              </ol>
-              <span class="menu-arrow">&#9662;</span>
-            </a>
-            <a href="javascript:void 0" class="edit button">Edit</a>
-          </h2>
-          <div class="editor-wrapper">
-            <pre id="editor"><span class="ace_comment"># Imported declarations are just for type checking</span>
-@import
-<span class="ace_keyword">namespace</span> document {
-  <span class="ace_keyword">def</span> write(text string)
-}
+    <div id="background" class="theme-twilight">
+      <section>
+        <div class="blurred"><div class="tilted"><pre class="first"></pre><pre class="second"></pre></div></div>
+        <h1><span><b>Skew</b> is a web-first, cross-platform programming language with an optimizing compiler.</span></h1>
+      </section>
+    </div>
 
-<span class="ace_comment"># The compiler inlines this function in release mode</span>
-<span class="ace_keyword">def</span> mod(i int, n int, text string) string {
-  <span class="ace_keyword">return</span> i % n == 0 ? text : <span class="ace_string">""</span>
-}
+    <section id="content" class="theme-light">
+      <h3 id="what">What is it?</h3>
 
-<span class="ace_comment"># Execution starts at the entry point</span>
+      <p>
+        Skew is a programming language for building cross-platform software.
+        It compiles to straightforward, readable source code in other languages and is designed to be easy to integrate into a mixed-language code base.
+        The main focus of the project has been to develop solid, production-quality code for the web.
+        Skew looks like this:
+      </p>
+
+      <pre class="skew">
+# Execution starts at the entry point
 @entry
-<span class="ace_keyword">def</span> fizzBuzz {
-  <span class="ace_keyword">for</span> i <span class="ace_keyword">in</span> 1..101 {
-    <span class="ace_keyword">var</span> text = mod(i, 3, <span class="ace_string">"Fizz"</span>) + mod(i, 5, <span class="ace_string">"Buzz"</span>)
-    document.write((text == <span class="ace_string">""</span> ? i.toString : text) + <span class="ace_string">"\n"</span>)
-  }
-}</pre>
-          </div>
-        </div>
-        <div class="output">
-          <h2>
-            <a href="javascript:void 0" class="dropdown">
-              <span class="compiler-target">JS (Release)</span>
-              <ol class="menu">
-                <li class="menu-item disabled">Change target:</li>
-                <li class="menu-item" id="target-javascript-debug">JS (Debug)</li>
-                <li class="menu-item" id="target-javascript-release">JS (Release)</li>
-                <li class="menu-item" id="target-csharp">C#</li>
-              </ol>
-              <span class="menu-arrow">&#9662;</span>
-            </a>
-            <a href="javascript:void 0" class="run button">Run</a>
-          </h2>
-          <pre>(<span class="ace_keyword">function</span>(){<span class="ace_keyword">function</span> c(){<span class="ace_keyword">for</span>(<span class="ace_keyword">var</span> a=1;a&lt;101;a=a+1|0){<span class="ace_keyword">var</span> b=(a%3?<span class="ace_string">''</span>:<span class="ace_string">'Fizz'</span>)+(a%5?<span class="ace_string">''</span>:<span class="ace_string">'Buzz'</span>);document.write((b==<span class="ace_string">''</span>?a.toString():b)+<span class="ace_string">'\n'</span>)}}c()})();</pre>
-        </div>
-        <div class="clearfix"></div>
-      </div>
-    </section>
-
-    <section>
-      <div class="inner">
-        <p class="warning">
-          Warning: This is a hobby project and is still evolving rapidly.
-          It can be used for real things (the compiler is written in itself) but the language and standard library are not completely stable yet.
-        </p>
-
-        <h3 id="what">What is it?</h3>
-
-        <p>
-          Skew is a programming language for building cross-platform software.
-          It compiles to straightforward, readable source code in other languages and is designed to be easy to integrate into a mixed-language code base.
-        </p>
-
-        <p>
-          The compiler currently contains a production-quality JavaScript target, a working C# target, and a partially-complete target for C++11.
-          It can easily be extended to support languages like Java, Swift, C++/CX, Python, PHP, and so on.
-        </p>
-
-        <p>
-          Notable features:
-        </p>
-
-        <ul>
-          <li class="expandable">
-            <button>Open declarations</button>
-            <div class="reveal">
-              <p>
-                Unlike most object-oriented languages, all block declarations can be split up into multiple pieces.
-                This makes it much easier to organize complex code (test code can be separate from the implementation, for example) and often also helps when used with conditional compilation.
-              </p>
-              <pre class="skew">enum EventType {
-}
-
-class Event {
-  def type EventType
-}
-
-########################################
-# Keyboard event
-
-enum EventType {
-  KEYBOARD
-}
-
-class Event {
-  def asKeyboardEvent KeyboardEvent {
-    assert(type == .KEYBOARD)
-    return self as KeyboardEvent
+def fizzBuzz {
+  for i in 1..101 {
+    var text = mod(i, 3, "Fizz") + mod(i, 5, "Buzz")
+    document.write((text == "" ? i.toString : text) + "\n")
   }
 }
 
-class KeyboardEvent : Event {
-  over type EventType { return .KEYBOARD }
+# The compiler inlines this function in release mode
+def mod(i int, n int, text string) string {
+  return i % n == 0 ? text : ""
 }
 
-########################################
-# Mouse event
-
-enum EventType {
-  MOUSE
-}
-
-class Event {
-  def asMouseEvent MouseEvent {
-    assert(type == .MOUSE)
-    return self as MouseEvent
-  }
-}
-
-class MouseEvent : Event {
-  over type EventType { return .MOUSE }
-}</pre>
-              <p>
-                Open declarations also make it possible to safely add to imported code and other libraries at compile time, sort of like C# extension methods.
-              </p>
-              <pre class="skew">class double {
-  def radToDeg double {
-    return self * 180 / Math.PI
-  }
-
-  def degToRad double {
-    return self * Math.PI / 180
-  }
-}</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Operator overloading</button>
-            <div class="reveal">
-              <p>
-                The compiler checks for operators on the first operand.
-                Operator overloading can make code more readable in many cases, but can also dramatically reduce readability when used incorrectly.
-                Use with good judgement.
-              </p>
-              <pre class="skew">enum Axis {
-  X
-  Y
-}
-
-class Vector {
-  var x double
-  var y double
-
-  def -(p Vector) Vector {
-    return new(x - p.x, y - p.y)
-  }
-
-  def [](a Axis) double {
-    return a == .X ? x : y
-  }
-
-  def []=(a Axis, v double) {
-    if a == .X { x = v }
-    else { y = v }
-  }
-}
-
-@export
-class Player {
-  var position Vector
-
-  def deltaTo(other Player) Vector {
-    return other.position - position
-  }
-
-  def moveAlongAxis(axis Axis, delta double) {
-    position[axis] = position[axis] + delta
-  }
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in debug mode:
-              </p>
-              <pre class="js">(function() {
-  var Axis = {
-    X: 0
-  };
-
-  function Vector(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  Vector.prototype.subtract = function(p) {
-    return new Vector(this.x - p.x, this.y - p.y);
-  };
-
-  Vector.prototype.get = function(a) {
-    return a == Axis.X ? this.x : this.y;
-  };
-
-  Vector.prototype.set = function(a, v) {
-    if (a == Axis.X) {
-      this.x = v;
-    }
-
-    else {
-      this.y = v;
-    }
-  };
-
-  Player = function(position) {
-    this.position = position;
-  };
-
-  Player.prototype.deltaTo = function(other) {
-    return other.position.subtract(this.position);
-  };
-
-  Player.prototype.moveAlongAxis = function(axis, delta) {
-    this.position.set(axis, this.position.get(axis) + delta);
-  };
-})();</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Wrapped types</button>
-            <div class="reveal">
-              <p>
-                Wrapped types are defined using the "type" keyword.
-                They must be explicitly casted, which can be used to improve type safety.
-              </p>
-              <pre class="skew">type CSV = string
-
-@export
-def escapeForCSV(text string) CSV {
-  if "\"" in text || "," in text || "\n" in text {
-    return ("\"" + text.replaceAll("\"", "\"\"") + "\"") as CSV
-  }
-  return text as CSV
-}</pre>
-              <p>
-                Wrapped types can also be used to add encapsulation without the overhead of additional allocation.
-                Instance functions added to wrapped types are automatically rewritten as global functions during compilation that take the instance as an extra first argument.
-              </p>
-              <pre class="skew">type Color : int {
-  def r int { return (self as int) &amp; 255 }
-  def g int { return ((self as int) >> 8) &amp; 255 }
-  def b int { return ((self as int) >> 16) &amp; 255 }
-  def a int { return (self as int) >>> 24 }
-
-  def opaque Color {
-    return new(r, g, b, 255)
-  }
-}
-
-namespace Color {
-  def new(r int, g int, b int, a int) Color {
-    return (r | g &lt;&lt; 8 | b &lt;&lt; 16 | a &lt;&lt; 24) as Color
-  }
-}
-
-@export
-def isOrange(color Color) bool {
-  return color.opaque == Color.new(255, 127, 0, 255)
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in release mode:
-              </p>
-              <pre class="js">(function(){isOrange=function(a){return b(a)==-16744449};function b(a){return a|-16777216}})();</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Conditional compilation</button>
-            <div class="reveal">
-              <p>
-                Top-level if statements allow for conditional code compilation.
-                Like all declarations, top-level if statements are also order-independent and are evaluated from the outside in.
-                Conditions must be compile-time constants but are fully type-checked, unlike the C preprocessor.
-                Including preprocessing as part of the syntax tree ensures that there aren't syntax errors hiding in unused code branches.
-                Constant values can be overridden at compile time using a command-line argument such as <span class="chunk">"--define:TRACE=true"</span>.
-              </p>
-              <pre class="skew">if TRACE {
-  const traceEnter = (label string) => {
-    Log.info("[enter] " + label)
-    Log.indent++
-  }
-
-  const traceLeave = (label string) => {
-    Log.indent--
-    Log.info("[leave] " + label)
-  }
-}
-
-else {
-  def traceEnter(label string) {}
-  def traceLeave(label string) {}
-}
-
-const TRACE = false</pre>
-              <p>
-                The compiler includes some predefined variables that are automatically set based on the compilation settings.
-              </p>
-              <pre class="skew">if TARGET == .CSHARP {
-  class ParseError : System.Exception {}
-} else {
-  class ParseError {}
-}</pre>
-              <p>
-                Another form of conditional compilation is the "@skip" annotation.
-                Annotating something with "@skip" means that all call sites and their argument evaluations will be removed at compile time and will not be present in the output.
-                This is cleaner and less error-prone than using top-level if statements for conditional compilation of functions because all uses are type-checked even when unused.
-              </p>
-              <pre class="skew"># Any annotation can be applied conditionally using the
-# post-if syntax. The condition must be a compile-time
-# constant just like for top-level if statements.
-@skip if RELEASE
-def debugLog(text string) {
-  dynamic.console.log(text)
-}
-
-@export
-def sum(x int, y int) int {
-  if x + y &lt; 0 {
-    debugLog("warning: \(x) + \(y) &lt; 0")
-  }
-  return x + y
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in debug mode:
-              </p>
-              <pre class="js">(function() {
-  // Any annotation can be applied conditionally using the
-  // post-if syntax. The condition must be a compile-time
-  // constant just like for top-level if statements.
-  function debugLog(text) {
-    console.log(text);
-  }
-
-  sum = function(x, y) {
-    if ((x + y | 0) &lt; 0) {
-      debugLog('warning: ' + x.toString() + ' + ' + y.toString() + ' &lt; 0');
-    }
-
-    return x + y | 0;
-  };
-})();</pre>
-              <p>
-                ...and this in release mode:
-              </p>
-              <pre class="js">(function(){sum=function(a,b){return a+b|0}})();</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Lambda expressions</button>
-            <div class="reveal">
-              <p>
-                Lambda expressions are lexical closures, meaning they have mutable access to the symbols they close over.
-                Regular functions declared using "def" are not lambda expressions and cannot be casted to a lambda type since they are not represented as objects in some language targets.
-                The argument and/or return types can be omitted when they can be inferred from context.
-              </p>
-              <pre class="skew">@entry
-def main {
-  # These are all equivalent
-  var zero1 = => 0
-  var zero2 = () => 0
-  var zero3 = () int => 0
-  var zero4 = () int => { return 0 }
-
-  # These are both equivalent
-  var add1 = (x int, y int) => 0
-  var add2 fn(int, int) int = (x, y) => 0
-}</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Generics with type erasure</button>
-            <div class="reveal">
-              <p>
-                Type erasure is beneficial in a web environment because it generates compact code, which improves both network transfer time and JIT warmup time.
-                Generics do not currently support type inference.
-              </p>
-              <pre class="skew">class Pair&lt;A, B> {
-  const first A
-  const second B
-}
-
-@export
-def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
-  return Pair&lt;A, B>.new(first, second)
-}</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Type inference</button>
-            <div class="reveal">
-              <p>
-                Types can often be inferred from context, which avoids the need to repeat redundant type declarations.
-                Variable types are optional but function signatures are required to avoid harming API readability.
-              </p>
-              <pre class="skew">enum Demo {
-  DEMO
-}
-
-@export
-def main {
-  # Without type inference
-  var lambda fn(int, int) int = (x int, y int) int => x + y
-  var demo Demo = Demo.DEMO
-  var list List&lt;int> = [1, 2, 3]
-  var map StringMap&lt;int> = {"a": 1, "b": 2}
-
-  # With type inference
-  lambda = (x, y) => x + y
-  demo = .DEMO
-  list = [1, 2, 3]
-  map = {"a": 1, "b": 2}
-}</pre>
-            </div>
-          </li>
-        </ul>
-
-        <p>
-          Compiler optimizations:
-        </p>
-
-        <ul>
-          <li class="expandable">
-            <button>JavaScript syntax tree compaction</button>
-            <div class="reveal">
-              <p>
-                The compiler uses a complex lattice of rules to compact the generated JavaScript code in release mode similar to the advanced compilation mode in Google Closure Compiler.
-                However, the compiler can often do slightly better than Google's compiler due to certain language features (explicit integer types, for example).
-                This reduces application startup time by transferring less data over the network.
-              </p>
-              <pre class="skew">enum Type {
-  RADIANS
-  DEGREES
-  SECONDS
-  METERS
-}
-
-@export
-def format(type Type, value double) string {
-  if type == .DEGREES || type == .RADIANS {
-    if type == .RADIANS {
-      value *= 180 / Math.PI
-    }
-    return "\(value)deg"
-  }
-  if type == .SECONDS {
-    return "\(value)s"
-  }
-  assert(type == .METERS)
-  return "\(value)m"
+# Imported declarations are just for type checking
+@import
+namespace document {
+  def write(text string)
 }
 </pre>
-              <p>
-                The code above reduces down to this JavaScript code in release mode:
-              </p>
-              <pre class="js">(function(){format=function(a,b){return a==1||!a?(a||(b*=57.29577951308232),b+'deg'):b+(a^2?'m':'s')}})();</pre>
-            </div>
-          </li>
 
-          <li class="expandable">
-            <button>Symbol renaming</button>
-            <div class="reveal">
-              <p>
-                The compiler includes a global symbol motion and renaming pass in release mode to reduce symbol name length similar to the advanced compilation mode in Google Closure Compiler.
-                Namespace nesting is removed and symbols are renamed to the shortest possible names using frequency analysis.
-                Unrelated properties and local variables can reuse the same names, which makes those names even more common and easier for gzip to compress.
-                This reduces application startup time by transferring less data over the network.
-                It also serves as a form of obfuscation if you care about that sort of thing.
-                Renaming is not done for symbols with an "@import" or "@export" annotation and for names accessed off of the special "dynamic" type.
-              </p>
-              <pre class="skew">namespace Demo {
-  class Vector {
-    var x double
-    var y double
-  }
+      <p>
+        The language and compiler are in development and are still somewhat subject to change.
+        The compiler is bootstrapped, which means it's written in Skew and compiles itself.
+        It currently contains production-quality JavaScript generation and working C# generation.
+        C++ generation is next and is already in progress.
+      </p>
 
-  class Rect {
-    var lower Vector
-    var upper Vector
+      <h3 id="why">Why use it?</h3>
 
-    def area double {
-      return (upper.x - lower.x) * (upper.y - lower.y)
-    }
+      <p>
+        The intent is to use this language for the platform-independent stuff in an application and to use the language native to the target platform for the platform-specific stuff.
+        When done properly, the vast majority of the code is completely platform-independent and new platforms can be targeted easily with a small platform-specific shim.
+      </p>
 
-    def include(x double, y double) {
-      lower.x = Math.min(lower.x, x)
-      lower.y = Math.min(lower.y, y)
-      upper.x = Math.max(upper.x, x)
-      upper.y = Math.max(upper.y, y)
-    }
-  }
+      Pros:
 
-  namespace Rect {
-    def empty Rect {
-      return new(
-        Vector.new(Math.INFINITY, Math.INFINITY),
-        Vector.new(-Math.INFINITY, -Math.INFINITY))
-    }
-  }
-}
+      <ul class="padded">
+        <li>
+          <b>Advanced optimizations:</b>
+          The optimizations in the compiler combined with certain language features (integers, explicit exports, wrapped types, etc.) makes writing compact, efficient JavaScript code easy and pleasant.</li>
+        <li>
+          <b>Fast compile times:</b>
+          Code compiles at the speed of a browser refresh.
+          Web development still feels like web development despite using an optimizing compiler with static typing.
+          This is in contrast to many other comparable compile-to-JavaScript languages.
+        </li>
 
-@export
-def demo {
-  var rect = Demo.Rect.empty
-  for i in 0..100 {
-    rect.include(Math.random, Math.random)
-  }
-  console.log(rect.area)
-}
+        <li>
+          <b>Natural debugging experience:</b>
+          Debugging is done in a single language using the platform-native debugger.
+          No need to try to debug a multi-language app with a debugger that only understands one language.
+        </li>
 
-@import
-const console dynamic</pre>
-              <p>
-                The code above becomes this JavaScript code in release mode.
-                Notice how the properties for both "Rect" and "Vector" can reuse the same names because they are two unrelated types:
-              </p>
-              <pre class="js">(function(){demo=function(){for(var a=new i(new h(Infinity,Infinity),new h(-Infinity,-Infinity)),b=0;b&lt;100;b=b+1|0)f(a,Math.random(),Math.random());console.log(e(a))};function e(a){return (a.b.a-a.a.a)*(a.b.b-a.a.b)}function f(c,a,b){c.a.a=Math.min(c.a.a,a),c.a.b=Math.min(c.a.b,b),c.b.a=Math.max(c.b.a,a),c.b.b=Math.max(c.b.b,b)}function h(a,b){this.a=a,this.b=b}function i(a,b){this.a=a,this.b=b}})();</pre>
-            </div>
-          </li>
+        <li>
+          <b>Easy integration:</b>
+          Generated code is very readable and closely corresponds with the original.
+          Language features allow for the easy import and export of code to and from the target language.
+        </li>
 
-          <li class="expandable">
-            <button>Function inlining</button>
-            <div class="reveal">
-              <p>
-                The compiler currently inlines simple functions where the body consists of a single expression statement or return statement and where each argument is used once.
-              </p>
-              <pre class="skew">class CheckedValue&lt;T> {
-  var _value T
-  var _check fn(T) bool
+        <li>
+          <b>Fast iteration time:</b>
+          In addition to a fast compiler and a good debugging experience, garbage collection is used instead of manual memory management.
+          This eliminates a whole class of time-consuming bugs that get in the way of the important stuff.
+        </li>
 
-  def value T {
-    return _value
-  }
+        <li>
+          <b>Native code emission:</b>
+          For native targets, application logic is compiled directly to native code and is not interpreted in a virtual machine.
+          Native apps don't have to pay for JIT warmup time and native app performance is not at the whim of heuristics.
+          The generated code can be compiled using industry-standard compilers that leverage decades of optimization work.
+        </li>
+      </ul>
 
-  def value=(value T) {
-    assert(_check(value))
-    _value = value
-  }
-}
+      Cons:
 
-@entry
-def main {
-  var length = CheckedValue&lt;int>.new(0, x => {
-    return x >= 0
-  })
-  length.value = length.value + 100
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in release mode:
-              </p>
-              <pre class="js">(function(){function e(){var a=new d(0,function(b){return b>-1});a.a=a.a+100|0}function d(a,b){this.a=a,this.b=b}e()})();</pre>
-            </div>
-          </li>
+      <ul class="padded">
+        <li>
+          <b>Lack of IDE support:</b>
+          IDE support is planned but is a significant undertaking and will not materialize for a while.
+          Developers who normally lean heavily on IDEs will be less efficient than usual.
+        </li>
 
-          <li class="expandable">
-            <button>Constant folding</button>
-            <div class="reveal">
-              <p>
-                Constant folding does partial evaluation of the code at compile-time.
-                This often opens up opportunities for further optimizations such as dead code elimination inside the "else" branch of an "if true" statement.
-                Constant folding works well in combination with with function inlining.
-              </p>
-              <pre class="skew">const COLOR = rgba(127, 255, 0, 255)
+        <li>
+          <b>Immaturity:</b>
+          This is a new programming language and hasn't stood the test of time.
+          There will likely be many rough edges both in the language design and in the tools.
+          Many planned features are not yet implemented.
+        </li>
 
-def rgba(r int, g int, b int, a int) int {
-  return (r &amp; 255) &lt;&lt; 24 | (g &amp; 255) &lt;&lt; 16 | (b &amp; 255) &lt;&lt; 8 | (a &amp; 255)
-}
+        <li>
+          <b>Lack of community:</b>
+          New programming languages don't have the wealth of searchable Q&amp;A data that established programming languages have.
+          Solutions to random issues are likely not available online.
+        </li>
 
-@export
-def demo {
-  if COLOR == 0x7FFF00FF {
-    dynamic.console.log(COLOR)
-  }
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in release mode:
-              </p>
-              <pre class="js">(function(){demo=function(){console.log(2147418367)}})();</pre>
-            </div>
-          </li>
+        <li>
+          <b>No cross-platform multithreading:</b>
+          Multithreading is not a language feature and needs to be done in the target language.
+          This limits multithreading opportunities to cleanly separable tasks like image decoding.
+        </li>
 
-          <li class="expandable">
-            <button>Tree shaking</button>
-            <div class="reveal">
-              <p>
-                The compiler starts from functions with the "@export" and "@entry" annotations and finds all transitive dependencies.
-                Any code that wasn't reached is treated as dead and removed from the output.
-                This reduces application startup time by transferring less data over the network.
-                This is also enabled in debug mode because lots of extra unused library code makes debugging harder.
-              </p>
-            </div>
-          </li>
+        <li>
+          <b>Lack of low-level features:</b>
+          Features such as memory layout, move semantics, destructors, and vector instructions are intentionally omitted.
+          These features don't map well to all language targets and their emulation is expensive.
+          Use of these features is limited to imported library routines implemented in the target language.
+        </li>
+      </ul>
 
-          <li class="expandable">
-            <button>Devirtualization</button>
-            <div class="reveal">
-              <p>
-                Virtual functions have overhead, mostly because they prevent inlining.
-                Devirtualization detects functions that are unnecessarily virtual and rewrites them to global functions instead, which can then be optimized further.
-                It is why function inlining works on instance functions.
-              </p>
-            </div>
-          </li>
+      <h3 id="start">Getting Started</h3>
 
-          <li class="expandable">
-            <button>Interface removal</button>
-            <div class="reveal">
-              <p>
-                Interfaces that only have one implementation can be safely replaced with that implementation.
-                This opens up more optimization opportunities such as devirtualization and inlining.
-              </p>
-            </div>
-          </li>
-        </ul>
+      <h4>Installation</h4>
 
-        <h3 id="why">Why use it?</h3>
+      <p>
+        First, install <a href="https://nodejs.org/">node</a> if you don't have it already.
+        The release version of the compiler is cross-compiled to JavaScript and node is a JavaScript runtime.
+        Installing node also installs a package manager called <a href="https://www.npmjs.com">npm</a> that can be used to install the compiler:
+      </p>
+      <pre>npm install -g skew</pre>
+      <p>
+        The compiler command is called "skewc".
+        Run "skewc --help" to see a list of all available command-line flags.
+        Example usage:
+      </p>
+      <pre>skewc <span class="chunk">src/*.sk</span> <span class="chunk">--output-file=compiled.js</span> <span class="chunk">--target=js</span> <span class="chunk">--release</span></pre>
 
-        <p>
-          The intent is to use this language for the platform-independent stuff in an application and to use the language native to the target platform for the platform-specific stuff.
-          When done properly, the vast majority of the code is completely platform-independent and new platforms can be targeted easily with a small platform-specific shim.
-        </p>
+      <h4>Examples</h4>
 
-        Pros:
+      <p>
+        Here are some simple examples to start from.
+        Each example demonstrates how to do input and output using imported code from the target language:
+      </p>
 
-        <ul class="padded">
-          <li>
-            <b>Advanced optimizations:</b>
-            The optimizations in the compiler combined with certain language features (integers, explicit exports, wrapped types, etc.) makes writing compact, efficient JavaScript code easy and pleasant.</li>
-          <li>
-            <b>Fast compile times:</b>
-            Code compiles at the speed of a browser refresh.
-            Web development still feels like web development despite using an optimizing compiler with static typing.
-            This is in contrast to many other comparable compile-to-JavaScript languages.
-          </li>
+      <ul>
+        <li class="expandable">
+          <button class="expand">Example browser app (JavaScript)</button>
+          <div class="reveal">
+            <p>
+              Create a file called "sparks.sk" that looks like this:
+            </p>
+            <pre class="skew" data-content="sparks"></pre>
+            <p>
+              Invoke the compiler to generate JavaScript code.
+              Any compilation errors will show up here:
+            </p>
+            <pre>skewc sparks.sk <span class="chunk">--output-file=sparks.js</span> <span class="chunk">--target=js</span></pre>
+            <p>
+              Create another file called "index.html" to serve the compiled code:
+            </p>
+            <pre>&lt;body>&lt;/body>
+&lt;script src="sparks.js">&lt;/script>
+</pre>
+            <p>
+              That's it!
+              Open "index.html" in a browser to see the app.
+              To build a production-ready version of your app, just add the <span class="chunk">"--release"</span> flag to the end of the compiler invocation:
+            </p>
+            <pre>skewc sparks.sk <span class="chunk">--output-file=sparks.js</span> <span class="chunk">--target=js</span> <span class="chunk">--release</span></pre>
+          </div>
+        </li>
 
-          <li>
-            <b>Natural debugging experience:</b>
-            Debugging is done in a single language using the platform-native debugger.
-            No need to try to debug a multi-language app with a debugger that only understands one language.
-          </li>
+        <li class="expandable">
+          <button class="expand">Example terminal app (JavaScript)</button>
+          <div class="reveal">
+            <p>
+              Create a file called "calculator.sk" that looks like this:
+            </p>
+            <pre class="skew" data-content="calculator-node"></pre>
+            <p>
+              Invoke the compiler to generate JavaScript code.
+              Any compilation errors will show up here:
+            </p>
+            <pre>skewc calculator.sk <span class="chunk">--output-file=calculator.js</span> <span class="chunk">--target=js</span></pre>
+            <p>
+              That's it!
+              Run the generated code to see the app:
+            </p>
+            <pre>node calculator.js</pre>
+          </div>
+        </li>
 
-          <li>
-            <b>Easy integration:</b>
-            Generated code is very readable and closely corresponds with the original.
-            Language features allow for the easy import and export of code to and from the target language.
-          </li>
+        <li class="expandable">
+          <button class="expand">Example terminal app (C#)</button>
+          <div class="reveal">
+            <p>
+              Create a file called "calculator.sk" that looks like this:
+            </p>
+            <pre class="skew" data-content="calculator-csharp"></pre>
+            <p>
+              Invoke the compiler to generate C# code.
+              Any compilation errors will show up here:
+            </p>
+            <pre>skewc calculator.sk <span class="chunk">--output-file=calculator.cs</span> <span class="chunk">--target=cs</span></pre>
+            <p>
+              Compile the C# code to generate a .NET executable.
+              The example here uses <a href="http://www.mono-project.com/">Mono</a>, an open-source implementation of Microsoft's .NET Framework.
+            </p>
+            <pre>mcs calculator.cs <span class="chunk">-out:calculator.exe</span></pre>
+            <p>
+              That's it!
+              Run the generated executable to see the app:
+            </p>
+            <pre>mono calculator.exe</pre>
+          </div>
+        </li>
+      </ul>
 
-          <li>
-            <b>Fast iteration time:</b>
-            In addition to a fast compiler and a good debugging experience, garbage collection is used instead of manual memory management.
-            This eliminates a whole class of time-consuming bugs that get in the way of the important stuff.
-          </li>
+      <p>
+        All of these examples use the "dynamic" type for simplicity, but you'll likely want type imports for real work.
+        Skew will eventually have a package manager and type imports will live there.
+        I've put some <a href="https://github.com/evanw/skew-imports/tree/master/html5">HTML5 type imports</a> on GitHub for convenience in the meantime.
+      </p>
+      <p>
+        An important thing to keep in mind when developing with Skew is that the compiler does dead code elimination.
+        This means the compiler won't generate any output if nothing is marked for export.
+        You can either indicate a "main" function with the "@entry" annotation as is done in the examples above, or you can use the "@export" annotation to ensure certain functions are exported.
+      </p>
+      <p>
+        To get a better feel for the language, it's probably helpful to take a look at the different examples of Skew code in the <a href="javascript:toggleLiveEditor()">live editor</a> in addition to looking at the <a href="#docs">documentation</a> below.
+      </p>
 
-          <li>
-            <b>Native code emission:</b>
-            For native targets, application logic is compiled directly to native code and is not interpreted in a virtual machine.
-            Native apps don't have to pay for JIT warmup time and native app performance is not at the whim of heuristics.
-            The generated code can be compiled using industry-standard compilers that leverage decades of optimization work.
-          </li>
-        </ul>
+      <h4>IDE support</h4>
+      <ul class="padded">
+        <li>
+          <a href="http://www.sublimetext.com/">Sublime Text</a><br>
+          Follow <a href="https://github.com/evanw/skew/tree/master/extras/Sublime%20Text">these instructions</a> to install syntax highlighting.
+          Right-click and using the "Goto Definition" command sort of works (it looks for all declarations with that name).
+        </li>
+        <li>
+          <a href="https://atom.io/">Atom</a><br>
+          Install the <a href="https://atom.io/packages/skew">skew</a> package for syntax highlighting.
+          This also adds rudimentary IDE support that includes inline errors and type tooltips on hover.
+          Use the
+          <script>document.write(navigator.platform === 'MacIntel' ? '"\u2318;"' : '"Ctrl+;"')</script>
+          shortcut to open the diagnostics panel.
+          IDE features currently only update when the file is saved.
+        </li>
+      </ul>
 
-        Cons:
+      <h3 id="docs">Language Reference</h3>
 
-        <ul class="padded">
-          <li>
-            <b>Lack of IDE support:</b>
-            IDE support is planned but is a significant undertaking and will not materialize for a while.
-            Developers who normally lean heavily on IDEs will be less efficient than usual.
-          </li>
+      <p>
+        This reference is collapsed by default to make it easy to quickly get to different entries.
+        Either click an entry below to expand it or <a href="javascript:toggleSection('language-reference')">expand all entries</a> in this section to read them all at once.
+      </p>
 
-          <li>
-            <b>Immaturity:</b>
-            This is a new programming language and hasn't stood the test of time.
-            There will likely be many rough edges both in the language design and in the tools.
-            Many planned features are not yet implemented.
-          </li>
+      <ul class="language-reference">
+        <li class="expandable">
+          <button class="expand">Primitives</button>
+          <div class="reveal">
+            <p>
+              Skew has a handful of built-in types with special literals.
+              The code below is not valid (Skew only allows declarations at the top level) but it demonstrates the various kinds of literals and their types:
+            </p>
+            <pre class="skew">
+# Type "bool"
+false
+true
 
-          <li>
-            <b>Lack of community:</b>
-            New programming languages don't have the wealth of searchable Q&amp;A data that established programming languages have.
-            Solutions to random issues are likely not available online.
-          </li>
+# Type "int"
+0b101 # Binary
+0o123 # Octal
+123   # Decimal
+0xABC # Hex
+'a'   # Character
 
-          <li>
-            <b>No cross-platform multithreading:</b>
-            Multithreading is not a language feature and needs to be done in the target language.
-            This limits multithreading opportunities to cleanly separable tasks like image decoding.
-          </li>
+# Type "double"
+0.5
+1e-6
+1e100
 
-          <li>
-            <b>Lack of low-level features:</b>
-            Features such as memory layout, move semantics, destructors, and vector instructions are intentionally omitted.
-            These features don't map well to all language targets and their emulation is expensive.
-            Use of these features is limited to imported library routines implemented in the target language.
-          </li>
-        </ul>
+# Type "string"
+"abc"
 
-        <h3 id="start">Getting Started</h3>
+# Type "List&lt;int>"
+[1, 2, 3]
 
-        <p>
-          The compiler is currently published on <a href="https://www.npmjs.com/package/skew">npm</a>, the package manager for <a href="https://nodejs.org/">node</a>.
-          It's simplest to install it globally:
-        </p>
-        <pre>npm install -g skew</pre>
-        <p>
-          The compiler command is called "skewc".
-          Run "skewc --help" to see a list of all available command-line flags.
-          Example usage:
-        </p>
-        <pre>skewc src/*.sk --output-file=compiled.js --target=js --release</pre>
-        <p>
-          Simple examples to start from:
-        </p>
-        <ul>
-          <li class="expandable">
-            <button>Example browser app</button>
-            <div class="reveal">
-              <p>
-                Create a file called "sparks.sk" that looks like this:
-              </p>
-              <pre class="skew">@entry
-def main {
-  var canvas = document.createElement("canvas")
-  var context = canvas.getContext("2d")
-  var sparks List&lt;Spark> = []
-  var tick fn()
+# Type "StringMap&lt;int>"
+{"a": 1, "b": 2}
 
-  document.onmousemove = (e dynamic) => {
-    sparks.append(Spark.new(
-      e.pageX - canvas.offsetLeft,
-      e.pageY - canvas.offsetTop,
-      Math.random * 20 - 10,
-      Math.random * -40))
-  }
+# Type "IntMap&lt;int>"
+{1: 2, 3: 4}
+</pre>
+            <p>
+              For more information, see the <a href="#stdlib">standard library documentation</a> for each type.
+            </p>
+          </div>
+        </li>
 
-  tick = => {
-    canvas.width = 640
-    canvas.height = 480
-    canvas.style.background = "#EEE"
-    context.beginPath()
-    sparks.removeIf(s => {
-      s.x += s.vx / 2
-      s.y += s.vy / 2
-      s.vy += 3
-      s.time -= 1.0 / 60
-      context.moveTo(s.x, s.y)
-      context.lineTo(s.x + s.vx, s.y + s.vy)
-      return s.time &lt; 0
-    })
-    context.stroke()
-    requestAnimationFrame(tick)
-  }
-
-  document.body.appendChild(canvas)
-  tick()
-}
-
-class Spark {
-  var x double
-  var y double
-  var vx double
-  var vy double
-  var time = 1.0
-}
-
-@import {
-  const document dynamic
-  def requestAnimationFrame(callback fn())
-}</pre>
-              <p>
-                Invoke the compiler to generate JavaScript code.
-                Any compilation errors will show up here:
-              </p>
-              <pre>skewc sparks.sk --output-file=sparks.js --target=js</pre>
-              <p>
-                Create another file called "index.html" to serve the compiled code:
-              </p>
-              <pre class="skew">&lt;body>&lt;/body>
-&lt;script src="sparks.js">&lt;/script></pre>
-              <p>
-                That's it!
-                Open "index.html" in a browser to see the app.
-                To build a production-ready version of your app, just add the <span class="chunk">"--release"</span> flag to the end of the compiler invocation:
-              </p>
-              <pre>skewc sparks.sk --output-file=sparks.js --target=js --release</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Example command-line app</button>
-            <div class="reveal">
-              <p>
-                Create a file called "calculator.sk" that looks like this:
-              </p>
-              <pre class="skew">@entry
-def main {
-  var example = "(1 + 2) * 3"
-  var readline = require("readline").createInterface({
-    "input": process.stdin,
-    "output": process.stdout,
-  })
-  var question fn()
-  var answer = (text string) => {
-    var tokens = text.split(RegExp.new("(\\d+|[()+\\-*/])"))
-    var output List&lt;double> = []
-    var stack List&lt;int> = []
-    var priority = {'+': 1, '-': 1, '*': 2, '/': 2, '(': 3}
-    var binary = (callback fn(double, double) double) => {
-      var right = output.takeLast
-      var left = output.takeLast
-      output.append(callback(left, right))
-    }
-    tokens.append("\0")
-    for i in 0..tokens.count {
-      if i % 2 == 0 { continue }
-      var op = tokens[i][0]
-      switch op {
-        case '+', '-', '*', '/', '(', ')', '\0' {
-          var p = priority.get(op, 0)
-          while !stack.isEmpty &amp;&amp; priority.get(stack.last, 3) > p {
-            switch stack.last {
-              case '+' { binary((a, b) => a + b) }
-              case '-' { binary((a, b) => a - b) }
-              case '*' { binary((a, b) => a * b) }
-              case '/' { binary((a, b) => a / b) }
-              case '(' { if op != ')' { break } }
-              default { break }
-            }
-            if stack.takeLast == '(' { break }
-          }
-          if op != ')' &amp;&amp; op != '\0' { stack.append(op) }
-        }
-        default { output.append(parseFloat(tokens[i])) }
-      }
-    }
-    console.log("answer: \(output.first)")
-    question()
-  }
-  question = => readline.question("> ", answer)
-  console.log("> " + example)
-  answer(example)
-}
-
-@import {
-  const console dynamic
-  const process dynamic
-  const RegExp dynamic
-  def parseFloat(text string) double
-  def require(name string) dynamic
-}</pre>
-              <p>
-                Invoke the compiler to generate JavaScript code.
-                Any compilation errors will show up here:
-              </p>
-              <pre>skewc calculator.sk --output-file=calculator.js --target=js</pre>
-              <p>
-                That's it!
-                Run "node calculator.js" to see the app.
-              </p>
-            </div>
-          </li>
-        </ul>
-        <p>
-          All of these examples use the "dynamic" type for simplicity, but you'll likely want type imports for real work.
-          Skew will eventually have a package manager and type imports will live there.
-          I've put some <a href="https://github.com/evanw/skew-imports/tree/master/html5">HTML5 type imports</a> on GitHub for convenience in the meantime.
-        </p>
-        <p>
-          IDE support:
-        </p>
-        <ul class="padded">
-          <li>
-            <a href="http://www.sublimetext.com/">Sublime Text</a><br>
-            Follow <a href="https://github.com/evanw/skew/tree/master/extras/Sublime%20Text">these instructions</a> to install syntax highlighting.
-          </li>
-          <li>
-            <a href="https://atom.io/">Atom</a><br>
-            Install the <a href="https://atom.io/packages/skew">skew</a> package for syntax highlighting.
-            This also adds rudimentary IDE support that includes inline errors and type tooltips on hover.
-            Use the
-            <script>document.write(navigator.platform === 'MacIntel' ? '"\u2318;"' : '"Ctrl+;"')</script>
-            shortcut to open the diagnostics panel.
-            IDE features currently only update when the file is saved.
-          </li>
-        </ul>
-
-        <h3 id="docs">Documentation</h3>
-
-        <p>
-          Language reference:
-        </p>
-        <ul>
-          <li class="expandable">
-            <button>Variables</button>
-            <div class="reveal">
-              <p>
-                Variables are declared with the "var" keyword and the type comes after the variable name.
-                If the type is omitted, the type is inferred from the assigned value.
-                Read-only variables are declared with the "const" keyword.
-              </p>
-              <pre class="skew">var explicitlyTyped int = 0
+        <li class="expandable">
+          <button class="expand">Variables</button>
+          <div class="reveal">
+            <p>
+              Variables are declared with the "var" keyword.
+              Unlike C-like languages, the type comes after the variable name.
+              This makes blocks of variables much more readable because the variable name is more important than the variable type.
+              If the type is omitted, the type is inferred from the assigned value.
+            </p>
+            <pre class="skew">
+var explicitlyTyped int = 0
 var implicitlyTyped = 0
-const readOnly = 0</pre>
-              <p>
-                Constant values can be overridden at compile time using the <span class="chunk">"--define"</span> flag.
-                For example, the flag <span class="chunk">"--define:readOnly=1"</span> would cause "readOnly" to be initialized to 1 instead of 0 in the code above.
-              </p>
-            </div>
-          </li>
+</pre>
+            <p>
+              Read-only variables are declared with the "const" keyword instead of the "var" keyword.
+              This is similar to the "final" keyword in Java.
+              It is not similar to the "const" keyword from C++; the object referenced by the variable can still be mutated.
+              The compiler just ensures the variable cannot be reassigned.
+            </p>
+            <pre class="skew">
+const readOnly = 0
 
-          <li class="expandable">
-            <button>Functions</button>
-            <div class="reveal">
-              <p>
-                Functions are declared with the "def" keyword.
-                Parentheses are not used for functions that don't take any arguments, both when declaring the function and when calling it.
-                Absence of a return type is indicated by just not specifying a return type instead of requiring a special "void" type as other languages like C do.
-                Function declaration order doesn't matter.
-              </p>
-              <pre class="skew">def test {
-  withoutArguments
+@export
+def test {
+  readOnly = 1 # error: Cannot store to constant symbol "readOnly"
+}
+</pre>
+            <p>
+              Constant values can be overridden at compile time using the <span class="chunk">"--define"</span> flag.
+              For example, the flag <span class="chunk">"--define:readOnly=2"</span> would cause "readOnly" to be initialized to 2 instead of 0 in the code above.
+              This is useful for supporting multiple build configurations through conditional compilation.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Functions</button>
+          <div class="reveal">
+            <p>
+              Functions are declared with the "def" keyword.
+              Parentheses are not used for functions that don't take any arguments, both when declaring the function and when calling it.
+              This cuts out on a lot of unnecessary clutter that is present in other languages while still remaining unambiguous (functions must always be called and cannot be used by value).
+              Absence of a return type is indicated by just not specifying a return type instead of requiring a special "void" type as other languages like C do.
+            </p>
+            <pre class="skew">
+def withArguments(x int, y int, z int) int {
+  return 0
+}
+
+def withoutArguments int {
+  return 0
+}
+
+@export
+def test {
   withArguments(1, 2, 3)
+  withoutArguments
+}
+</pre>
+            <p>
+              Function overloading is supported.
+              The compiler does overload resolution at compile-time and makes sure each overload has a unique name before code generation begins.
+            </p>
+            <pre class="skew">
+# This will be renamed "overloaded1"
+def overloaded(x int) {
+}
+
+# This will be renamed "overloaded2"
+def overloaded(x string) {
+}
+
+@export
+def test {
   overloaded(123)
   overloaded("text")
 }
-
-def withoutArguments int { return 0 }
-def withArguments(x int, y int, z int) int { return 0 }
-def overloaded(x int) {}
-def overloaded(x string) {}</pre>
-              <p>
-                Abstract and imported functions cannot be implemented and are declared by omitting the body:
-              </p>
-              <pre class="skew">@import
+</pre>
+            <p>
+              Abstract and imported functions cannot be implemented.
+              This is accomplished by omitting the body in the function declaration:
+            </p>
+            <pre class="skew">
+@import
 def print(text string)
 
+@export
 def test {
   print("works")
-}</pre>
-              <p>
-                Setter-style functions are declared by adding a "=" to the end of the function name:
-              </p>
-              <pre class="skew">def test {
-  value = 0
+}
+</pre>
+            <p>
+              Setter-style functions are declared by adding a "=" to the end of the function name.
+              Because Skew supports function overloading, a getter and a setter for the same name can coexist:
+            </p>
+            <pre class="skew">
+def value double {
+  return 0
 }
 
-def value=(x int) {}</pre>
-              <p>
-                Multiple declarations can exist for the same function, although there can only be one implementation.
-                This is sometimes useful when organizing code for clarity and is especially useful when combined with conditional compilation.
-                It's sort of comparable to forward declarations in C/C++ although they are order-independent and don't need to come first.
-              </p>
-            </div>
-          </li>
+def value=(x double) {
+}
 
-          <li class="expandable">
-            <button>If-else statements</button>
-            <div class="reveal">
-              <p>
-                Unlike in C, all conditional statements omit the parentheses surrounding the condition and require braces.
-              </p>
-              <pre class="skew">def test(a bool, b bool) {
+@export
+def test {
+  value = (value + 0.5) / 2
+}
+</pre>
+            <p>
+              Multiple declarations can exist for the same function, although there can only be one implementation.
+              This is sometimes useful when organizing code for clarity and is especially useful when combined with conditional compilation.
+              It's sort of comparable to forward declarations in C/C++ although they are order-independent and don't need to come first.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">If-else statements</button>
+          <div class="reveal">
+            <p>
+              Unlike in C, all conditional statements omit the parentheses surrounding the condition and require braces:
+            </p>
+            <pre class="skew">
+@export
+def test(a bool, b bool) {
   if a {}
   else if b {}
   else {}
-}</pre>
-              <p>
-                C-style conditional expressions are supported.
-              </p>
-              <pre class="skew">def test(a bool) int {
+}
+</pre>
+            <p>
+              If statements cannot be used as expressions.
+              Use C-style conditional expressions instead:
+            </p>
+            <pre class="skew">
+@export
+def test(a bool) int {
   return a ? 1 : 2
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Loop statements</button>
-            <div class="reveal">
-              <p>
-                Different loop types that all loop from 0 to 4 inclusive:
-              </p>
-              <pre class="skew">def test {
+        <li class="expandable">
+          <button class="expand">Loop statements</button>
+          <div class="reveal">
+            <p>
+              Skew has several different types of loops.
+              Each loop below loops from 0 to 4 inclusive:
+            </p>
+            <pre class="skew">
+@export
+def test {
   # While loop
   var a = 0
-  while a &lt; 5 { a++ }
+  while a &lt; 5 {
+    a++
+  }
 
   # Range for loop (lower inclusive, upper exclusive)
-  for b in 0..5 {}
+  for b in 0..5 {
+  }
 
   # C-style for loop
-  for c = 0; c &lt; 5; c++ {}
+  for c = 0; c &lt; 5; c++ {
+  }
 
   # For-in loop (currently only for List&lt;T>)
-  for d in [0, 1, 2, 3, 4] {}
-}</pre>
-              <p>
-                Loop control flow is done using the "break" and "continue" keywords as in C.
-              </p>
-            </div>
-          </li>
+  for d in [0, 1, 2, 3, 4] {
+  }
+}
+</pre>
+            <p>
+              Loop control flow is done using the same "break" and "continue" keywords that C-like languages use.
+            </p>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Switch statements</button>
-            <div class="reveal">
-              <p>
-                Switch statements look more like other statements than they do in C.
-                The fallthrough feature of C-style switch statements was deliberately removed.
-              </p>
-              <pre class="skew">def test(x int) bool {
+        <li class="expandable">
+          <button class="expand">Switch statements</button>
+          <div class="reveal">
+            <p>
+              Switch statements look a little different than they do in C.
+              The fallthrough feature of C-style switch statements was deliberately removed since it's rarely used and is a recipe for bugs.
+            </p>
+            <pre class="skew">
+@export
+def test(x int) bool {
   switch x {
     case 1, 2, 3 { return true }
     case 4, 5 { return false }
     default { return x > 0 }
   }
-}</pre>
-              <p>
-                Unlike in C, the "break" keyword is only for use with loops.
-                Using a break inside a "case" block will break from the enclosing loop.
-              </p>
-              <pre class="skew">def validateEscapes(text string) bool {
+}
+</pre>
+            <p>
+              Unlike in C, the "break" keyword is only used with loops.
+              Using a break inside a "case" block will break from the enclosing loop instead:
+            </p>
+            <pre class="skew">
+@export
+def validateEscapes(text string) bool {
   var slash = false
   for i in 0..text.count {
     switch text[i] {
@@ -1063,43 +536,116 @@ def value=(x int) {}</pre>
     }
   }
   return !slash
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Return statements</button>
-            <div class="reveal">
-              <p>
-                One unusual thing about return statements is the handling of return statements where the value is on the next line.
-                This case is trivial in semicolon-terminated languages like C because the value comes before the semicolon.
-                In languages like JavaScript, automatic semicolon insertion gets in the way and causes the code to behave incorrectly (return undefined instead of the value).
-                Skew doesn't have semicolons or automatic semicolon insertion and so doesn't suffer from this issue.
-                In Skew, an expression following a return statement is considered to be the returned value if the return statement is inside a function with non-empty a return type.
-              </p>
-              <pre class="skew"># This function returns "int" so the value is returned
+        <li class="expandable">
+          <button class="expand">Return statements</button>
+          <div class="reveal">
+            <p>
+              Return statements use the standard "return" keyword.
+              The type of the returned value is specified after the function name.
+              Omitting the return type means a return type of "void".
+            </p>
+            <pre class="skew">
+def returnsSomething int {
+  return 0
+}
+
+def returnsNothing {
+}
+
+@export
+def test {
+  returnsSomething
+  returnsNothing
+}
+</pre>
+            <p>
+              One unusual thing about return statements is the handling of return statements where the value is on the next line.
+              This case is trivial in semicolon-terminated languages like C because the value comes before the semicolon.
+              In languages like JavaScript, automatic semicolon insertion gets in the way and causes the code to behave incorrectly (return undefined instead of the value).
+              Skew doesn't have semicolons or automatic semicolon insertion and so doesn't suffer from this issue.
+              In Skew, an expression following a return statement is considered to be the returned value if the return statement is inside a function with non-empty a return type.
+            </p>
+            <pre class="skew">
+# This function returns "int" so the value is returned
+@export
 def add(a int, b int) int {
   return
-    a + b
+  a + b
 }
 
 # This function returns nothing so the value is ignored
+@export
 def subtract(a int, b int) {
   return
   a - b # warning: Unused expression
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Lambda expressions</button>
-            <div class="reveal">
-              <p>
-                Lambda expressions are lexical closures, meaning they have mutable access to the symbols they close over.
-                Regular functions declared using "def" are not lambda expressions and cannot be casted to a lambda type since they are not represented as objects in some language targets.
-                The argument and/or return types can be omitted when they can be inferred from context.
-              </p>
-              <pre class="skew">def test {
+        <li class="expandable">
+          <button class="expand">Lambda expressions</button>
+          <div class="reveal">
+            <p>
+              A lambda expression is an anonymous function that can be stored in a variable.
+              They use a different syntax than regular functions.
+              Regular functions declared using "def" are not lambda expressions and cannot be casted to a lambda type since they cannot be stored in a variable in some language targets (Java, for example).
+              The "=>" symbol is used to separate the argument list and the function body.
+            </p>
+            <pre class="skew">
+@export
+def test int {
+  var add = (x int, y int) int => {
+    return x + y
+  }
+  return add(1, 2)
+}
+</pre>
+            <p>
+              Lambda expressions are lexical closures, meaning they have mutable access to the symbols they use.
+              Subsequent calls to the same lambda expression will remember the old values.
+            </p>
+            <pre class="skew">
+@export
+def test int {
+  var x = 0
+  var add = (y int) => {
+    x += y
+  }
+  add(1)
+  add(2)
+  return x # The value of "x" is 3 here
+}
+</pre>
+            <p>
+              Lambda types are specified using the "fn" keyword.
+              The syntax is similar to the syntax for defining a function except argument names are not included (only argument types) and parentheses are required.
+            </p>
+            <pre class="skew">
+var add fn(int, int) int = null
+var callback fn() = null
+
+@export
+def test {
+  add = (x int, y int) int => {
+    return x + y
+  }
+  callback = () => {
+  }
+}
+</pre>
+            <p>
+              Since packaging up and manipulating little bits of code is so convenient, there are several shortcuts for creating more concise lambda expressions.
+              The argument and/or return types can be omitted when they can be inferred from context.
+            </p>
+            <pre class="skew">
+@export
+def test {
   # These are all equivalent
   var zero1 = => 0
   var zero2 = () => 0
@@ -1107,32 +653,150 @@ def subtract(a int, b int) {
   var zero4 = () int => { return 0 }
 
   # These are both equivalent
-  var add1 = (x int, y int) => 0
-  var add2 fn(int, int) int = (x, y) => 0
-}</pre>
-            </div>
-          </li>
+  var add1 = (x int, y int) => x + y
+  var add2 fn(int, int) int = (x, y) => x + y
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Classes and interfaces</button>
-            <div class="reveal">
-              <p>
-                Skew's object model is similar to Java.
-                A class can inherit from at most one base class and can implement any number of interfaces.
-                The symbols ":" and "::" are used instead of the "extends" and "implements" keywords.
-              </p>
-              <p>
-                Unlike Java, all type declarations are "open", which means members from duplicate type declarations for the same type are all merged together at compile time into a single type.
-                This allows for large type declarations to be better organized and also allows for safe compile-time monkey patching.
-                In the example below, the "ChunkedBuffer" type can be made to implement the "Encoder" interface using a separate declaration.
-              </p>
-              <pre class="skew">class Buffer {
+        <li class="expandable">
+          <button class="expand">Classes and constructors</button>
+          <div class="reveal">
+            <p>
+              A class provides an object template that can be used to create instances of that class.
+              A constructor is a function inside a class called "new" with no return type.
+              The constructor's job is to set up the new class instance with initial values for all instance variables.
+              Use "self" to refer to the class instance.
+            </p>
+            <pre class="skew">
+@export
+class Node {
+  var weight int
+  var name string
+  var children List&lt;Node>
+
+  def new(name string, children List&lt;Node>) {
+    weight = 0
+    self.name = name
+    self.children = children
+  }
+}
+</pre>
+            <p>
+              When not explicitly declared, constructors are automatically generated with one argument for each instance variable without a default value in declaration order.
+              This greatly simplifies defining objects in many situations.
+              For example, the above code can be simplified to the code below since the constructor can be generated automatically.
+              Unlike Java, constructors are just members of the type they construct and don't require a special operator to invoke:
+            </p>
+            <pre class="skew">
+class Node {
+  var weight = 0
+  var name string
+  var children List&lt;Node>
+}
+
+@export
+def test Node {
+  return Node.new("x", [
+    Node.new("y", []),
+    Node.new("z", []),
+  ])
+}
+</pre>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Interfaces and subclassing</button>
+          <div class="reveal">
+            <p>
+              Skew's object model is similar to Java.
+              A class can inherit from at most one base class and can implement any number of interfaces.
+              The symbols ":" and "::" are used instead of the "extends" and "implements" keywords.
+            </p>
+            <pre class="skew">
+interface Interface {
+  def interfaceFunction int
+}
+
+class BaseClass {
+  var value = 1
+
+  def baseFunction int {
+    return value
+  }
+}
+
+class DerivedClass : BaseClass :: Interface {
+  def interfaceFunction int {
+    return baseFunction + 2
+  }
+}
+
+@export
+def test int {
+  var derived = DerivedClass.new
+  var base BaseClass = derived
+  var face Interface = derived
+  return base.baseFunction + face.interfaceFunction
+}
+</pre>
+            <p>
+              Overriding a function can be error-prone in the presence of function overloading.
+              To fix this, overriding a function must be done using the "over" keyword instead of the "def" keyword.
+              The compiler checks that all functions declared using "over" are actually overriding something.
+              That way changing the type signature of the overridden function is a compile error unless the type signature of the overriding function is also updated.
+              The overridden function can be called from within the overriding function using the "super" keyword.
+            </p>
+            <pre class="skew">
+class BaseClass {
+  var factor double
+
+  def new(factor double) {
+    self.factor = factor
+  }
+
+  def scale(x double) double {
+    return x * factor
+  }
+}
+
+class DerivedClass : BaseClass {
+  def new {
+    super(2)
+  }
+
+  over scale(x double) double {
+    return super(x) * 3
+  }
+}
+
+@export
+def test double {
+  var derived = DerivedClass.new
+  var base = derived as BaseClass
+  return base.scale(1)
+}
+</pre>
+            <p>
+              Unlike Java, all type declarations are "open", which means members from duplicate type declarations for the same type are all merged together at compile time into a single type.
+              This allows for large type declarations to be better organized.
+              In the example below, the "ChunkedBuffer" type can be made to implement the "Encoder" interface using a separate declaration.
+            </p>
+            <pre class="skew">
+class Buffer {
   var data = ""
-  def append(data string) { self.data += data }
+
+  def append(data string) {
+    self.data += data
+  }
 }
 
 class ChunkedBuffer : Buffer {
-  over append(data string) { self.data += "[" + data + "]" }
+  over append(data string) {
+    super("[" + data + "]")
+  }
 }
 
 interface Encoder {
@@ -1141,8 +805,13 @@ interface Encoder {
 }
 
 class ChunkedBuffer :: Encoder {
-  def encodeInt(value int) { append(value.toString) }
-  def encodeString(value string) { append(value) }
+  def encodeInt(value int) {
+    append(value.toString)
+  }
+
+  def encodeString(value string) {
+    append(value)
+  }
 }
 
 class User {
@@ -1153,70 +822,69 @@ class User {
     encoder.encodeInt(id)
     encoder.encodeString(name)
   }
-}</pre>
-            </div>
-          </li>
+}
 
-          <li class="expandable">
-            <button>Constructors</button>
-            <div class="reveal">
-              <p>
-                A constructor is a function called "new" with no return type.
-                Constant instance variables can only be assigned to in a constructor.
-              </p>
-              <pre class="skew">class Node {
-  var weight int
-  var children List&lt;Node>
+@export
+def test {
+  User.new(0, "name").encode(ChunkedBuffer.new)
+}
+</pre>
+            <p>
+              Another use of open type declarations is for safe compile-time monkey patching:
+            </p>
+            <pre class="skew">
+class double {
+  def radToDeg double {
+    return self * 180 / Math.PI
+  }
 
-  def new(children List&lt;Node>) {
-    weight = 0
-    self.children = children
+  def degToRad double {
+    return self * Math.PI / 180
   }
 }
 
-class NamedNode : Node {
-  const name string
+@export
+def test double {
+  return Math.PI.radToDeg
+}
+</pre>
+          </div>
+        </li>
 
-  def new(children List&lt;Node>, name string) {
-    super(children)
-    self.name = name
-  }
-}</pre>
-              <p>
-                When not explicitly declared, constructors are automatically generated with one argument for each instance variable without a default value in declaration order.
-                This greatly simplifies defining objects in many situations.
-                For example, the above code can be simplified to the code below since both constructors can be generated automatically:
-              </p>
-              <pre class="skew">class Node {
-  var weight = 0
-  var children List&lt;Node>
+        <li class="expandable">
+          <button class="expand">Generics</button>
+          <div class="reveal">
+            <p>
+              Generics are implemented using type erasure to ensure a compact and readable implementation in the generated code.
+              The current implementation is pretty simple.
+              There isn't any type inference yet, and also no advanced features like covariant or contravariant conversions.
+            </p>
+            <pre class="skew">
+class Pair&lt;A, B> {
+  const first A
+  const second B
 }
 
-class NamedNode : Node {
-  const name string
-}</pre>
-              <p>
-                Unlike Java, constructors are just members of the type they construct and don't require a special operator to invoke:
-              </p>
-              <pre class="new">def createTree Node {
-  return Node.new([
-    NamedNode.new([], "X"),
-    NamedNode.new([], "Y"),
-  ])
-}</pre>
-            </div>
-          </li>
+@export
+def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
+  return Pair&lt;A, B>.new(first, second)
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Enums</button>
-            <div class="reveal">
-              <p>
-                An enum is a compile-time integer constant.
-                Enums automatically convert to ints but ints don't automatically convert to enums.
-                When referencing an enum value, the enum type can be omitted when it can be inferred from context.
-                This leaves just a leading "." character.
-              </p>
-              <pre class="skew">class Entry {
+        <li class="expandable">
+          <button class="expand">Enums</button>
+          <div class="reveal">
+            <p>
+              An enum is a compile-time integer constant.
+              Enums automatically convert to ints but ints don't automatically convert to enums.
+              When referencing an enum value, the enum type can be omitted when it can be inferred from context.
+              This leaves just a leading "." character.
+            </p>
+            <pre class="skew">
+@export
+class Entry {
   enum Kind {
     FILE
     DIRECTORY
@@ -1224,70 +892,95 @@ class NamedNode : Node {
 
   const kind Kind
   const children List&lt;Entry>
-}
 
-def visitFiles(entry Entry, visitor fn(Entry)) {
-  switch entry.kind {
-    case .FILE { # Could also be "case Entry.Kind.FILE"
-      visitor(entry)
-    }
+  def visitFiles(visitor fn(Entry)) {
+    switch kind {
+      # This is short for "case Entry.Kind.FILE"
+      case .FILE {
+        visitor(self)
+      }
 
-    case .DIRECTORY { # Could also be "case Entry.Kind.DIRECTORY"
-      for child in entry.children {
-        visitFiles(child, visitor)
+      # This is short for "case Entry.Kind.DIRECTORY"
+      case .DIRECTORY {
+        for child in children {
+          child.visitFiles(visitor)
+        }
       }
     }
   }
-}</pre>
-              <p>
-                For convenience, each enum type automatically generates a "toString" function if one isn't present.
-                Enums can have instance functions just like any other object type (they are automatically rewritten as global functions during compilation that take the enum as an extra first argument).
-              </p>
-              <pre class="skew">enum Demo {
-  A
-  B
-  C
+}
+</pre>
+            <p>
+              For convenience, each enum type automatically generates a "toString" function if one isn't present.
+              Enums can have instance functions just like any other object type.
+              Instance functions are automatically rewritten as global functions during compilation that take the enum as an extra first argument.
+            </p>
+            <pre class="skew">
+enum Tag {
+  DIV
 
-  def log {
-    print(toString)
+  def toHTML string {
+    return "&lt;" + toString.toLowerCase + ">"
   }
 }
 
-def test {
-  Demo.A.log # This prints "A"
+@export
+def test string {
+  return Tag.DIV.toHTML # This returns "&lt;div>"
 }
+</pre>
+          </div>
+        </li>
 
-@import
-def print(text string)</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Casting</button>
-            <div class="reveal">
-              <p>
-                Casting is done using the "as" operator.
-                These are useful for converting between primitive types and also for downcasting from a base class to a derived class.
-                Downcasts are unchecked and have no performance impact in dynamic language targets, where they disappear entirely.
-              </p>
-              <pre class="skew">class Base {}
+        <li class="expandable">
+          <button class="expand">Cast expressions</button>
+          <div class="reveal">
+            <p>
+              Casting is done using the "as" operator.
+              These are useful for converting between primitive types and also for downcasting from a base class to a derived class.
+              Downcasts are unchecked and have no performance impact in dynamic language targets, where they disappear entirely.
+            </p>
+            <pre class="skew">
+class Base {}
 class Derived : Base {}
 
+@export
 def test {
   var truncated = 3.5 as int
   var base Base = Derived.new
   var downcasted = base as Derived
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Try/catch/finally/throw statements</button>
-            <div class="reveal">
-              <p>
-                These function similar to other languages.
-              </p>
-              <pre class="skew">def test {
+        <li class="expandable">
+          <button class="expand">String interpolation</button>
+          <div class="reveal">
+            <p>
+              String interpolation is the term for a special escape sequence that embeds an arbitrary expression inside a string.
+              This is a useful shortcut because it will automatically call the "toString" function on the expression.
+            </p>
+            <pre class="skew">
+@export
+def test(a int, b int) {
+  # These two statements are equivalent
+  var x = a.toString + " + " + b.toString + " = " + (a + b).toString
+  var y = "\(a) + \(b) = \(a + b)"
+}
+</pre>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Try/catch/finally/throw statements</button>
+          <div class="reveal">
+            <p>
+              These function similar to other languages.
+            </p>
+            <pre class="skew">
+@export
+def test {
   try {
     switch (Math.random * 3) as int {
       case 0 { throw A.new }
@@ -1302,18 +995,20 @@ def test {
 
 class A {}
 class B {}
-class C {}</pre>
-            </div>
-          </li>
+class C {}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Protected access</button>
-            <div class="reveal">
-              <p>
-                Names that start with "_" have protected access.
-                They are only available to that class and its derived classes.
-              </p>
-              <pre class="skew">class Test {
+        <li class="expandable">
+          <button class="expand">Protected access</button>
+          <div class="reveal">
+            <p>
+              Names that start with "_" have protected access.
+              They are only available to that class and its derived classes.
+            </p>
+            <pre class="skew">
+class Test {
   var _value = 0
 
   def test {
@@ -1321,24 +1016,27 @@ class C {}</pre>
   }
 }
 
-def main {
-  Test.new._value++ # This causes a compile error
-}</pre>
-              <p>
-                Protected access works for any named scope including namespaces and interfaces.
-              </p>
-            </div>
-          </li>
+@export
+def main(test Test) {
+  test._value++ # error: Cannot access protected symbol "_value" here
+}
+</pre>
+            <p>
+              Protected access works for any named scope including namespaces and interfaces.
+            </p>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Namespace merging (a.k.a. "static" members)</button>
-            <div class="reveal">
-              <p>
-                All variables and functions inside a class declaration are attached to instances of that class.
-                To scope global variables and functions inside the class name, put them inside a namespace with the same name as the class.
-                This does what the "static" keyword does in many other languages.
-              </p>
-              <pre class="skew">class Demo {
+        <li class="expandable">
+          <button class="expand">Namespace merging (a.k.a. "static" members)</button>
+          <div class="reveal">
+            <p>
+              All variables and functions inside a class declaration are attached to instances of that class.
+              To scope global variables and functions inside the class name, put them inside a namespace with the same name as the class.
+              This does what the "static" keyword does in many other languages.
+            </p>
+            <pre class="skew">
+class Demo {
   var instanceVariable = 0
   def instanceFunction {}
 }
@@ -1348,47 +1046,57 @@ namespace Demo {
   def globalFunction {}
 }
 
+@export
 def test {
   Demo.new.instanceVariable
   Demo.new.instanceFunction
   Demo.globalVariable
   Demo.globalFunction
-}</pre>
-              <p>
-                This works for all types with instances including enums and interfaces.
-              </p>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>Generics</button>
-            <div class="reveal">
-              <p>
-                Generics are implemented using type erasure to ensure a compact and readable implementation in the generated code.
-                The current implementation is pretty simple.
-                There isn't any type inference yet, and also no advanced features like covariant and contravariant conversions.
-              </p>
-              <pre class="skew">class Pair&lt;A, B> {
-  const first A
-  const second B
 }
+</pre>
+            <p>
+              This works for all types with instances including enums and interfaces.
+            </p>
+          </div>
+        </li>
 
-@export
-def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
-  return Pair&lt;A, B>.new(first, second)
-}</pre>
-            </div>
-          </li>
+        <li class="expandable">
+          <button class="expand">Operators and operator overloading</button>
+          <div class="reveal">
+            <p>
+              Skew has quite a few operators.
+              Many of them are described in detail after this.
+              The ones that may be unfamiliar and that aren't described in detail are the "**" exponent operator and the ">>>" unsigned right shift operator.
+              Here's the complete list for quick reference:
+            </p>
+            <pre class="skew" data-noload="true">
+# Unary, overridable
++ - ~ ++ --
 
-          <li class="expandable">
-            <button>Operator overloading</button>
-            <div class="reveal">
-              <p>
-                The compiler checks for operators on the first operand.
-                Operator overloading can make code more readable in many cases, but can also dramatically reduce readability when used incorrectly.
-                Use with good judgement.
-              </p>
-              <pre class="skew">enum Axis {
+# Binary, overridable
+&lt;=> [] in
++ - * / % ** &amp; | ^ &lt;&lt; >> >>>
++= -= *= /= %= **= &amp;= |= ^= &lt;&lt;= >>= >>>=
+
+# Ternary, overridable
+[]=
+
+# Binary, not overridable
+= &amp;&amp; || == != &lt; > &lt;= >=
+?. ?? ?=
+
+# For list and map literals
+[new] [...]
+{new} {...}
+</pre>
+            <p>
+              An operator is overloaded by declaring an instance function on the target type with that operator name.
+              For binary operators, the compiler checks for operator overloads on the left operand.
+              Operator overloading can make code more readable in many cases, but can also dramatically reduce readability when used incorrectly.
+              Use with good judgement.
+            </p>
+            <pre class="skew">
+enum Axis {
   X
   Y
 }
@@ -1422,27 +1130,32 @@ class Player {
   def moveAlongAxis(axis Axis, delta double) {
     position[axis] = position[axis] + delta
   }
-}</pre>
-              <p>
-                The "in" operator is a special case.
-                It looks for operators on the second operand instead of the first operand since that allows it to work with generic types:
-              </p>
-              <pre class="skew">class Container&lt;T> {
+}
+</pre>
+            <p>
+              The "in" operator is a special case.
+              It looks for operator overloads on the right operand instead of the left operand since that allows it to work with generic types:
+            </p>
+            <pre class="skew">
+class Container&lt;T> {
   def in(value T) bool
   def add(value T)
 }
 
+@export
 def addIfMissing&lt;T>(value T, container Container&lt;T>) {
   if !(value in container) {
     container.add(value)
   }
-}</pre>
-              <p>
-                Another interesting operator is the "&lt;=>" comparison operator.
-                It returns an integer that is less than zero if the first operand is less than the second, greater than zero if the first operand is greater than the second, and zero if the first operand is equal to the second.
-                It is used by the compiler to automatically implement the "&lt;", ">", "&lt;=", and ">=" operators, which cannot be implemented manually.
-              </p>
-              <pre class="skew">class Point {
+}
+</pre>
+            <p>
+              Another interesting operator is the "&lt;=>" comparison operator.
+              It returns an integer that is less than zero if the left operand is less than the right, greater than zero if the left operand is greater than the right, and zero if the left operand is equal to the right.
+              It is used by the compiler to automatically implement the "&lt;", ">", "&lt;=", and ">=" operators, which cannot be implemented manually.
+            </p>
+            <pre class="skew">
+class Point {
   var x int
   var y int
 
@@ -1452,17 +1165,20 @@ def addIfMissing&lt;T>(value T, container Container&lt;T>) {
   }
 }
 
+@export
 def test(list List&lt;Point>) {
-  list.sort((a, b) => a &lt;=> b)
   var zero = Point.new(0, 0)
+  list.sort((a, b) => a &lt;=> b)
   list.removeIf(p => p &lt; zero)
-}</pre>
-              <p>
-                There are also special operators that allow the type to integrate with list and map literals.
-                The simplest way of doing this is with special constructors called "[new]" and "{new}" that take lists as arguments.
-                The compiler puts all expressions inside the list or map literal in a list and passes it to the constructor.
-              </p>
-              <pre class="skew">class DemoList&lt;T> {
+}
+</pre>
+            <p>
+              There are also special operators that allow the type to integrate with list and map literals.
+              The simplest way of doing this is with special constructors called "[new]" and "{new}" that take lists as arguments.
+              The compiler puts all expressions inside the list or map literal in a list and passes it to the constructor.
+            </p>
+            <pre class="skew">
+class DemoList&lt;T> {
   def [new](values List&lt;T>) {}
 }
 
@@ -1470,17 +1186,19 @@ class DemoMap&lt;K, V> {
   def {new}(keys List&lt;K>, values List&lt;V>) {}
 }
 
-@entry
+@export
 def test {
   var list DemoList&lt;int> = [1, 2, 3]
   var map DemoMap&lt;int, int> = {1: 2, 3: 4}
-}</pre>
-              <p>
-                The more flexible way of doing this is with the special "[...]" and "{...}" instance functions.
-                The compiler constructs a new object of that type and builds a chain of calls to those special instance functions with one call for each element in the list or map literal.
-                This allows the type to support different types of values in the same literal.
-              </p>
-              <pre class="skew">class DemoList {
+}
+</pre>
+            <p>
+              The more flexible way of doing this is with the special "[...]" and "{...}" instance functions.
+              The compiler constructs a new object of that type and builds a chain of calls to those special instance functions with one call for each element in the list or map literal.
+              This allows the type to support different types of values in the same literal.
+            </p>
+            <pre class="skew">
+class DemoList {
   def [...](value int) DemoList { return self }
   def [...](value string) DemoList { return self }
 }
@@ -1490,57 +1208,50 @@ class DemoMap {
   def {...}(key string, value string) DemoMap { return self }
 }
 
-@entry
+@export
 def test {
   var list DemoList = [1, "2"]
   var map DemoMap = {1: 2, "3": "4"}
-}</pre>
-              <p>
-                Mutating operators can be synthesized from non-mutating operators.
-                For example, a type that defines the "+" operator also gets the "+=" and "++" operators automatically:
-              </p>
-              <pre class="skew">@rename("goog.math.Long")
+}
+</pre>
+            <p>
+              Mutating operators can be synthesized from non-mutating operators.
+              For example, a type that defines the "+" operator also gets the "+=" and "++" operators automatically:
+            </p>
+            <pre class="skew">
+@rename("goog.math.Long")
 @import
 class Long {
   @rename("add")
   def +(x Long) Long
 
-  @alwaysinline
-  def +(x int) Long { return self + fromInt(x) }
+  def +(x int) Long {
+    return self + fromInt(x)
+  }
 }
 
 namespace Long {
   def fromInt(value int) Long
 }
 
-@entry
+@export
 def test {
   var a = Long.fromInt(123)
   a += Long.fromInt(234)
   a += 5
   a++
-}</pre>
-              <p>
-                The "==" and "!=" operators cannot be overloaded since they test for reference equality and need to handle implicit bidirectional type conversions.
-                The "&amp;&amp;" and "||" operators cannot be overloaded because of their special short-circuit evaluation behavior.
-                The "=" operator cannot be overridden since that's too confusing in a language that lacks value types.
-                If the "=" were overridable, objects would then be copied on assignment but would be passed by reference as arguments to function calls.
-              </p>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>The "?.", "??", and "?=" operators</button>
-            <div class="reveal">
-              <p>
-                These operators make handling nullable values easier and safer.
-                They are inspired by the same operators from C#.
-                The expression <span class="chunk">"a?.b"</span> is short for <span class="chunk">"a != null ? a.b : null"</span>, the expression <span class="chunk">"a ?? b"</span> is short for <span class="chunk">"a != null ? a : b"</span>, and the expression <span class="chunk">"a ?= b"</span> is short for <span class="chunk">"a != null ? a : a = b"</span>.
-                The compiler ensures sub-expressions are only evaluated once.
-              </p>
-              <pre class="skew">class Log {
+}
+</pre>
+            <p>
+              The "?.", "??", and "?=" operators make handling nullable values easier and safer.
+              They are inspired by the same operators from C#.
+              The expression <span class="chunk">"a?.b"</span> is short for <span class="chunk">"a != null ? a.b : null"</span>, the expression <span class="chunk">"a ?? b"</span> is short for <span class="chunk">"a != null ? a : b"</span>, and the expression <span class="chunk">"a ?= b"</span> is short for <span class="chunk">"a != null ? a : a = b"</span>.
+              The compiler ensures sub-expressions are only evaluated once.
+            </p>
+            <pre class="skew">
+class Log {
   def info(text string) {
-    dynamic.console.log(text)
+    console.log(text)
   }
 }
 
@@ -1560,18 +1271,29 @@ def test(log Log) {
   # Passing a null log is fine too (nothing is printed)
   dump(null, "blah")
   dump(null, null)
-}</pre>
-            </div>
-          </li>
+}
 
-          <li class="expandable">
-            <button>Wrapped types</button>
-            <div class="reveal">
-              <p>
-                Wrapped types are defined using the "type" keyword.
-                They must be explicitly casted, which can be used to improve type safety.
-              </p>
-              <pre class="skew">type CSV = string
+@import
+var console dynamic
+</pre>
+            <p>
+              The "==" and "!=" operators cannot be overloaded since they test for reference equality and need to handle implicit bidirectional type conversions.
+              The "&amp;&amp;" and "||" operators cannot be overloaded because of their special short-circuit evaluation behavior.
+              The "=" operator cannot be overridden since that's too confusing in a language that lacks value types.
+              If the "=" were overridable, objects would then be copied on assignment but would be passed by reference as arguments to function calls.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Wrapped types</button>
+          <div class="reveal">
+            <p>
+              Wrapped types are defined using the "type" keyword.
+              They are like type aliases but they must be explicitly casted, which can be used to improve type safety.
+            </p>
+            <pre class="skew">
+type CSV = string
 
 @export
 def escapeForCSV(text string) CSV {
@@ -1579,12 +1301,14 @@ def escapeForCSV(text string) CSV {
     return ("\"" + text.replaceAll("\"", "\"\"") + "\"") as CSV
   }
   return text as CSV
-}</pre>
-              <p>
-                Wrapped types can also be used to add encapsulation without the overhead of additional allocation.
-                Instance functions added to wrapped types are automatically rewritten as global functions during compilation that take the instance as an extra first argument.
-              </p>
-              <pre class="skew">type Color : int {
+}
+</pre>
+            <p>
+              Wrapped types can also be used to add encapsulation without the overhead of additional allocation.
+              Instance functions added to wrapped types are automatically rewritten as global functions during compilation that take the instance as an extra first argument.
+            </p>
+            <pre class="skew">
+type Color : int {
   def r int { return (self as int) &amp; 255 }
   def g int { return ((self as int) >> 8) &amp; 255 }
   def b int { return ((self as int) >> 16) &amp; 255 }
@@ -1604,31 +1328,31 @@ namespace Color {
 @export
 def isOrange(color Color) bool {
   return color.opaque == Color.new(255, 127, 0, 255)
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in release mode:
-              </p>
-              <pre class="js">(function(){isOrange=function(a){return b(a)==-16744449};function b(a){return a|-16777216}})();</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Conditional compilation</button>
-            <div class="reveal">
-              <p>
-                Top-level if statements allow for conditional code compilation.
-                Like all declarations, top-level if statements are also order-independent and are evaluated from the outside in.
-                Conditions must be compile-time constants but are fully type-checked, unlike the C preprocessor.
-                Including preprocessing as part of the syntax tree ensures that there aren't syntax errors hiding in unused code branches.
-                Constant values can be overridden at compile time using a command-line argument such as <span class="chunk">"--define:TRACE=true"</span>.
-              </p>
-              <pre class="skew">if TRACE {
-  const traceEnter = (label string) => {
+        <li class="expandable">
+          <button class="expand">Conditional compilation</button>
+          <div class="reveal">
+            <p>
+              Top-level if statements allow for conditional code compilation.
+              Like all declarations, top-level if statements are also order-independent and are evaluated from the outside in.
+              Conditions must be compile-time constants but are fully type-checked, unlike the C preprocessor.
+              Including preprocessing as part of the syntax tree ensures that there aren't syntax errors hiding in unused code branches.
+              Constant values can be overridden at compile time using a command-line argument such as <span class="chunk">"--define:TRACE=true"</span>.
+            </p>
+            <pre class="skew">
+const TRACE = true
+
+if TRACE {
+  var traceEnter = (label string) => {
     Log.info("[enter] " + label)
     Log.indent++
   }
 
-  const traceLeave = (label string) => {
+  var traceLeave = (label string) => {
     Log.indent--
     Log.info("[leave] " + label)
   }
@@ -1639,21 +1363,35 @@ else {
   def traceLeave(label string) {}
 }
 
-const TRACE = false</pre>
-              <p>
-                The compiler includes some predefined variables that are automatically set based on the compilation settings.
-              </p>
-              <pre class="skew">if TARGET == .CSHARP {
+@import
+namespace Log {
+  var indent = 0
+  def info(text string)
+}
+
+@export
+def test {
+  traceEnter("test")
+  traceLeave("test")
+}
+</pre>
+            <p>
+              The compiler includes some predefined variables that are automatically set based on the compilation settings.
+            </p>
+            <pre class="skew">
+if TARGET == .CSHARP {
   class ParseError : System.Exception {}
 } else {
   class ParseError {}
-}</pre>
-              <p>
-                Another form of conditional compilation is the "@skip" annotation.
-                Annotating something with "@skip" means that all call sites and their argument evaluations will be removed at compile time and will not be present in the output.
-                This is cleaner and less error-prone than using top-level if statements for conditional compilation of functions because all uses are type-checked even when unused.
-              </p>
-              <pre class="skew"># Any annotation can be applied conditionally using the
+}
+</pre>
+            <p>
+              Another form of conditional compilation is the "@skip" annotation.
+              Annotating something with "@skip" means that all call sites and their argument evaluations will be removed at compile time and will not be present in the output.
+              This is cleaner and less error-prone than using top-level if statements for conditional compilation of functions because all uses are type-checked even when unused.
+            </p>
+            <pre class="skew">
+# Any annotation can be applied conditionally using the
 # post-if syntax. The condition must be a compile-time
 # constant just like for top-level if statements.
 @skip if RELEASE
@@ -1667,129 +1405,122 @@ def sum(x int, y int) int {
     debugLog("warning: \(x) + \(y) &lt; 0")
   }
   return x + y
-}</pre>
-              <p>
-                The code above becomes this JavaScript code in debug mode:
-              </p>
-              <pre class="js">(function() {
-  // Any annotation can be applied conditionally using the
-  // post-if syntax. The condition must be a compile-time
-  // constant just like for top-level if statements.
-  function debugLog(text) {
-    console.log(text);
-  }
+}
+</pre>
+        </li>
 
-  sum = function(x, y) {
-    if ((x + y | 0) &lt; 0) {
-      debugLog('warning: ' + x.toString() + ' + ' + y.toString() + ' &lt; 0');
-    }
-
-    return x + y | 0;
-  };
-})();</pre>
-              <p>
-                ...and this in release mode:
-              </p>
-              <pre class="js">(function(){sum=function(a,b){return a+b|0}})();</pre>
-            </div>
-          </li>
-
-          <li class="expandable">
-            <button>The "dynamic" type</button>
-            <div class="reveal">
-              <p>
-                There is a special type called "dynamic" that tells the compiler to ignore type errors and pass all dynamically-typed code through verbatim to the target language.
-                It is mainly useful when interacting with external code, especially when targeting a dynamic language.
-              </p>
-              <p>
-                Simple example:
-              </p>
-              <pre class="skew">@import
+        <li class="expandable">
+          <button class="expand">The "dynamic" type</button>
+          <div class="reveal">
+            <p>
+              There is a special type called "dynamic" that tells the compiler to ignore type errors and pass all dynamically-typed code through verbatim to the target language.
+              It is mainly useful when interacting with external code, especially when targeting a dynamic language.
+            </p>
+            <p>
+              Simple example:
+            </p>
+            <pre class="skew">
+@import
 const console dynamic
 
-def main {
+@export
+def test {
   console.log("works")
-}</pre>
-              <p>
-                The "dynamic" type poisons everything it touches.
-                For example, "1 + x" has a dynamic type if "x" is dynamic because the compiler can't tell what type the expression will be ("x" could hold an int, a double, a string, or even something nonsensical like an object).
-                This makes it easy to bypass the compiler's type system by casting the value to the "dynamic" type first.
-              </p>
-              <p>
-                Pros:
-              </p>
-              <ul>
-                <li>Makes it easy to import large libraries without tons of type declarations.</li>
-                <li>
-                  Provides a way to bypass compiler checks when there's a type system mismatch with the target language.
-                  For example, C# supports "in" and "out" modifiers on generic type parameters and Skew does not.
-                </li>
-                <li>Used by the compiler to silence further errors when an error occurs during compilation (expressions with compile errors always have type "dynamic").</li>
-              </ul>
-              <p>
-                Cons:
-              </p>
-              <ul>
-                <li>Mistakes cause run-time errors instead of compile-time errors.</li>
-                <li>
-                  Most compiler features don't work on dynamically typed code (implicit function calls, operator overloading, function overloading, type wrapping, inlining, constant folding, and so on).
-                  Statically-typed values can still be passed through a dynamically-typed environment but must be casted back to their static type before being used or they likely won't work correctly.
-                </li>
-              </ul>
-              <p>
-                Values of dynamic type can also be used to emit constructor calls.
-                This is done using the "new" property just like for statically-typed objects.
-                Notice how function calls in the example below must be explicitly invoked via "()" unlike normal functions.
-                This is because the compiler has no type information so it can't distinguish functions from variables.
-              </p>
-              <pre class="skew">@import
+}
+</pre>
+            <p>
+              The "dynamic" type poisons everything it touches.
+              For example, "1 + x" has a dynamic type if "x" is dynamic because the compiler can't tell what type the expression will be ("x" could hold an int, a double, a string, or even something nonsensical like an object).
+              This makes it easy to bypass the compiler's type system by casting the value to the "dynamic" type first.
+            </p>
+            <p>
+              Pros:
+            </p>
+            <ul>
+              <li>Makes it easy to import large libraries without tons of type declarations.</li>
+              <li>
+                Provides a way to bypass compiler checks when there's a type system mismatch with the target language.
+                For example, C# supports "in" and "out" modifiers on generic type parameters and Skew does not.
+              </li>
+              <li>Used by the compiler to silence further errors when an error occurs during compilation (expressions with compile errors always have type "dynamic").</li>
+            </ul>
+            <p>
+              Cons:
+            </p>
+            <ul>
+              <li>Mistakes cause run-time errors instead of compile-time errors.</li>
+              <li>
+                Most compiler features don't work on dynamically typed code (implicit function calls, operator overloading, function overloading, type wrapping, inlining, constant folding, etc.).
+                Statically-typed values can still be passed through a dynamically-typed environment but must be casted back to their static type before being used or they likely won't work correctly.
+              </li>
+            </ul>
+            <p>
+              Values of dynamic type can also be used to emit constructor calls.
+              This is done using the "new" property just like for statically-typed objects.
+              Notice how function calls in the example below must be explicitly invoked via "()" unlike normal functions.
+              This is because the compiler has no type information so it can't distinguish functions from variables.
+            </p>
+            <pre class="skew">
+@import
 const Object dynamic
 
-def main int {
+@export
+def test int {
   return Object.new().toString().length
-}</pre>
-              <p>
-                The keyword "dynamic" can also be used as an expression with a property name following it.
-                This causes the following name to be emitted as an identifier with a dynamic type.
-                It's mainly useful as an inline shortcut to avoid an imported declaration.
-              </p>
-              <pre class="skew">class Demo : dynamic.DemoBase {
+}
+</pre>
+            <p>
+              The keyword "dynamic" can also be used as an expression with a property name following it.
+              This causes the following name to be emitted as an identifier with a dynamic type.
+              It's mainly useful as an inline shortcut to avoid an imported declaration.
+            </p>
+            <pre class="skew">
+@export
+class Demo : dynamic.DemoBase {
   def run {
     dynamic.console.log("works")
   }
-}</pre>
-            </div>
-          </li>
-        </ul>
+}
+</pre>
+          </div>
+        </li>
+      </ul>
 
-        <p>
-          Standard library:
-        </p>
-        <ul>
-          <li class="expandable">
-            <button>bool</button>
-            <div class="reveal">
-              <p>
-                There are two bool values, "true" and "false".
-              </p>
-              <pre class="skew">class bool {
+      <h3 id="stdlib">Standard Library</h3>
+
+      <p>
+        This reference is collapsed by default to make it easy to quickly get to different entries.
+        Either click an entry below to expand it or <a href="javascript:toggleSection('standard-library')">expand all entries</a> in this section to read them all at once.
+      </p>
+
+      <ul class="standard-library">
+        <li class="expandable">
+          <button class="expand">bool</button>
+          <div class="reveal">
+            <p>
+              There are two bool values, "true" and "false".
+            </p>
+            <pre class="skew" data-noload="true">
+class bool {
   def ! bool
   def toString string
-}</pre>
-              <p>
-                The "&amp;&amp;" and "||" operators also operate on bool values but cannot described using imported functions due to their special short-circuiting behavior.
-              </p>
-            </div>
-          </li>
+}
+</pre>
+            <p>
+              The "&amp;&amp;" and "||" operators also operate on bool values but cannot described using imported functions due to their special short-circuiting behavior.
+            </p>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>int</button>
-            <div class="reveal">
-              <p>
-                An int is a signed 32-bit non-nullable integer.
-                The supported bases are binary (0b101), octal (0o123), decimal (123), and hex (0xABC).
-              </p>
-              <pre class="skew">class int {
+        <li class="expandable">
+          <button class="expand">int</button>
+          <div class="reveal">
+            <p>
+              An int is a signed 32-bit non-nullable integer.
+              The supported bases are binary (0b101), octal (0o123), decimal (123), and hex (0xABC).
+            </p>
+            <pre class="skew" data-noload="true">
+class int {
   def + int
   def ++ int
   def - int
@@ -1824,19 +1555,21 @@ def main int {
   def ^=(x int) int
 
   def toString string
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>double</button>
-            <div class="reveal">
-              <p>
-                A double is a 64-bit non-nullable floating-point number.
-                A number literal must have a "." in it to be a double, otherwise it's an int.
-                The non-finite double constants are "Math.NAN" and "Math.INFINITY".
-              </p>
-              <pre class="skew">class double {
+        <li class="expandable">
+          <button class="expand">double</button>
+          <div class="reveal">
+            <p>
+              A double is a 64-bit non-nullable floating-point number.
+              A number literal must have a "." or an exponential "e" in it to be a double, otherwise it's an int.
+              The non-finite double constants are "Math.NAN" and "Math.INFINITY".
+            </p>
+            <pre class="skew" data-noload="true">
+class double {
   def + double
   def ++ double
   def - double
@@ -1858,26 +1591,28 @@ def main int {
   def isFinite bool
   def isNaN bool
   def toString string
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>string</button>
-            <div class="reveal">
-              <p>
-                A string is an immutable sequence of unicode code units.
-                Multi-line strings are allowed.
-                String literals must be double-quoted (single quotes are for C-style character literals, which turn into an int with the unicode code point for that character).
-                Valid escape sequences are "\0", "\r", "\n", "\t", "\\", "\"", "\'", and hex-style "\xFF".
-              </p>
-              <p>
-                Strings are stored using the natural string encoding for the target language.
-                For example, JavaScript uses UTF-16 and C++ uses UTF-8.
-                All indices are in terms of code units since code unit access can be done in constant time.
-                To work in platform-independent code points instead, use the code point APIs and Unicode.StringIterator.
-              </p>
-              <pre class="skew">class string {
+        <li class="expandable">
+          <button class="expand">string</button>
+          <div class="reveal">
+            <p>
+              A string is an immutable sequence of unicode code units.
+              Multi-line strings are allowed.
+              String literals must be double-quoted (single quotes are for C-style character literals, which turn into an int with the unicode code point for that character).
+              Valid escape sequences are "\0", "\r", "\n", "\t", "\\", "\"", "\'", and hex-style "\xFF".
+            </p>
+            <p>
+              Strings are stored using the natural string encoding for the target language.
+              For example, JavaScript uses UTF-16 and C++ uses UTF-8.
+              All indices are in terms of code units since code unit access can be done in constant time.
+              To work in platform-independent code points instead, use the code point APIs and the "Unicode.StringIterator" class.
+            </p>
+            <pre class="skew" data-noload="true">
+class string {
   def +(x string) string
   def +=(x string) string
   def &lt;=>(x string) int # Makes "&lt;", ">", "&lt;=", and ">=" work
@@ -1910,46 +1645,75 @@ namespace string {
   def fromCodePoints(x List&lt;int>) string
   def fromCodeUnit(x int) string
   def fromCodeUnits(x List&lt;int>) string
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>StringBuilder</button>
-            <div class="reveal">
-              <p>
-                In certain language targets, the "+=" operator on strings can be extremely inefficient.
-                This API provides an efficient way to construct large strings.
-              </p>
-              <pre class="skew">class StringBuilder {
+        <li class="expandable">
+          <button class="expand">StringBuilder</button>
+          <div class="reveal">
+            <p>
+              In certain language targets, the "+=" operator on strings can be extremely inefficient.
+              This API provides an efficient way to construct large strings.
+            </p>
+            <pre class="skew" data-noload="true">
+class StringBuilder {
   def new
   def append(x string)
   def toString string
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Box&lt;T></button>
-            <div class="reveal">
-              <p>
-                A generic wrapper object for non-nullable types (bool, int, and double) to make them nullable.
-                Also useful for nullable types to indicate the absence of a value when null is a valid value.
-              </p>
-              <pre class="skew">class Box&lt;T> {
+        <li class="expandable">
+          <button class="expand">Box&lt;T></button>
+          <div class="reveal">
+            <p>
+              A generic wrapper object for non-nullable types (bool, int, and double) to make them nullable.
+              Also useful for nullable types to indicate the absence of a value when null is a valid value.
+            </p>
+            <pre class="skew" data-noload="true">
+class Box&lt;T> {
   var value T
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>List&lt;T></button>
-            <div class="reveal">
-              <p>
-                Provides a generic array that stores all items linearly in memory.
-                List literals are enclosed in square brackets and look like [1, 2, 3].
-              </p>
-              <pre class="skew">class List&lt;T> {
+        <li class="expandable">
+          <button class="expand">List&lt;T></button>
+          <div class="reveal">
+            <p>
+              Provides a generic array that stores all items linearly in memory.
+              Example usage:
+            </p>
+            <pre class="skew">
+@export
+def test {
+  var list = [1, 2, 3]
+
+  # Index into a list using bracket notation
+  var mean = 0.0
+  for i in 0..list.count {
+    mean += list[i]
+  }
+  mean /= list.count
+
+  # Can also loop over items in a list directly
+  var variance = 0.0
+  for item in list {
+    variance += (item - mean) ** 2
+  }
+  variance /= list.count
+}
+</pre>
+            <p>
+              Complete API:
+            </p>
+            <pre class="skew" data-noload="true">
+class List&lt;T> {
   def new
   def [...](x T) List&lt;T> # Makes the [1, 2, 3] syntax work
 
@@ -2005,18 +1769,33 @@ namespace string {
   def slice(start int, end int) List&lt;T>
   def sort(x fn(T, T) int)
   def swap(x int, y int)
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>IntMap&lt;T></button>
-            <div class="reveal">
-              <p>
-                Provides a generic map where reading and writing is done in amortized constant time.
-                IntMap literals are enclosed in braces and look like {1: 2, 3: 4}.
-              </p>
-              <pre class="skew">class IntMap&lt;T> {
+        <li class="expandable">
+          <button class="expand">IntMap&lt;T></button>
+          <div class="reveal">
+            <p>
+              Provides a generic map where reading and writing is done in amortized constant time.
+              Example usage:
+            </p>
+            <pre class="skew">
+@export
+def test(key int) {
+  var map = {1: 2, 3: 4}
+  if !(key in map) {
+    map[key] = 0
+  }
+  map[key]++
+}
+</pre>
+            <p>
+              Complete API:
+            </p>
+            <pre class="skew" data-noload="true">
+class IntMap&lt;T> {
   def new
   def {...}(key int, value T) IntMap&lt;T> # Makes the {1: 2} syntax work
 
@@ -2033,18 +1812,33 @@ namespace string {
   def in(key int) bool # Makes the "x in y" syntax work
   def get(key int, defaultValue T) T
   def remove(key int)
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>StringMap&lt;T></button>
-            <div class="reveal">
-              <p>
-                Provides a generic map where reading and writing is done in amortized constant time.
-                StringMap literals are enclosed in braces and look like {"1": 2, "3": 4}.
-              </p>
-              <pre class="skew">class StringMap&lt;T> {
+        <li class="expandable">
+          <button class="expand">StringMap&lt;T></button>
+          <div class="reveal">
+            <p>
+              Provides a generic map where reading and writing is done in amortized constant time.
+              Example usage:
+            </p>
+            <pre class="skew">
+@export
+def test(key string) {
+  var map = {"a": 1, "b": 2}
+  if !(key in map) {
+    map[key] = 0
+  }
+  map[key]++
+}
+</pre>
+            <p>
+              Complete API:
+            </p>
+            <pre class="skew" data-noload="true">
+class StringMap&lt;T> {
   def new
   def {...}(key string, value T) StringMap&lt;T> # Makes the {"a": "b"} syntax work
 
@@ -2061,14 +1855,16 @@ namespace string {
   def get(key string, defaultValue T) T
   def in(key string) bool # Makes the "x in y" syntax work
   def remove(key string)
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Math</button>
-            <div class="reveal">
-              <pre class="skew">namespace Math {
+        <li class="expandable">
+          <button class="expand">Math</button>
+          <div class="reveal">
+            <pre class="skew" data-noload="true">
+namespace Math {
   const E double
   const INFINITY double
   const NAN double
@@ -2102,18 +1898,20 @@ namespace string {
 
   def min(x double, y double) double
   def min(x int, y int) int
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Unicode</button>
-            <div class="reveal">
-              <p>
-                The string type stores unicode code units, not code points.
-                See the documentation of "string" for more information.
-              </p>
-              <pre class="skew">namespace Unicode {
+        <li class="expandable">
+          <button class="expand">Unicode</button>
+          <div class="reveal">
+            <p>
+              The string type stores unicode code units, not code points.
+              See the documentation of "string" for more information.
+            </p>
+            <pre class="skew" data-noload="true">
+namespace Unicode {
   enum Encoding {
     UTF8
     UTF16
@@ -2142,28 +1940,33 @@ namespace string {
   }
 }
 </pre>
-              <p>
-                Example usage:
-              </p>
-              <pre class="skew">def countCodePointsInString(text string) int {
+            <p>
+              Example usage:
+            </p>
+            <pre class="skew">
+@export
+def countCodePointsInString(text string) int {
   var iterator = Unicode.StringIterator.INSTANCE
   iterator.reset(text, 0)
   return iterator.countCodePointsUntil(text.count)
 }
 
+@export
 def codePointAtIndex(text string, index int) int {
   var iterator = Unicode.StringIterator.INSTANCE
   iterator.reset(text, 0)
   iterator.countCodePointsUntil(index)
   return iterator.nextCodePoint
-}</pre>
-            </div>
-          </li>
+}
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Global constants</button>
-            <div class="reveal">
-              <pre class="skew">enum Target {
+        <li class="expandable">
+          <button class="expand">Global constants</button>
+          <div class="reveal">
+            <pre class="skew" data-noload="true">
+enum Target {
   NONE
   CPLUSPLUS
   CSHARP
@@ -2174,27 +1977,31 @@ def codePointAtIndex(text string, index int) int {
 const TARGET Target
 
 # This is true when the compiler is passed the <span class="chunk">"--release"</span> flag
-const RELEASE bool</pre>
-            </div>
-          </li>
+const RELEASE bool
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Global functions</button>
-            <div class="reveal">
-              <pre class="skew"># This causes a runtime failure when passed "false". Calls to assert
+        <li class="expandable">
+          <button class="expand">Global functions</button>
+          <div class="reveal">
+            <pre class="skew" data-noload="true">
+# This causes a runtime failure when passed "false". Calls to assert
 # will be completely removed in release mode, so arguments won't
 # be evaluated. This is accomplished with the "@skip" annotation.
-def assert(truth bool)</pre>
-            </div>
-          </li>
+def assert(truth bool)
+</pre>
+          </div>
+        </li>
 
-          <li class="expandable">
-            <button>Global annotations</button>
-            <div class="reveal">
-              <p>
-                These annotations trigger special behaviors in the compiler for the symbols they annotate.
-              </p>
-              <pre class="skew"># Using "@alwaysinline" warns if inlining wasn't possible
+        <li class="expandable">
+          <button class="expand">Global annotations</button>
+          <div class="reveal">
+            <p>
+              These annotations trigger special behaviors in the compiler for the symbols they annotate.
+            </p>
+            <pre class="skew" data-noload="true">
+# Using "@alwaysinline" warns if inlining wasn't possible
 def @alwaysinline
 def @neverinline
 
@@ -2233,19 +2040,413 @@ def @using(name string)
 # This causes a C++ "#include" pragma to be emitted when the symbol is used
 def @include(name string)
 </pre>
-            </div>
-          </li>
-        </ul>
-      </div>
+          </div>
+        </li>
+      </ul>
+
+      <h3>Compiler Optimizations</h3>
+
+      <p>
+        The compiler currently includes quite a few different optimizations aimed at reducing size code when compiling to JavaScript to speed up network transfer time.
+        Most of these passes can be enabled individually with compiler flags but they are all enabled with the "--release" flag.
+      </p>
+
+      <p>
+        This reference is collapsed by default to make it easy to quickly get to different entries.
+        Either click an entry below to expand it or <a href="javascript:toggleSection('compiler-optimizations')">expand all entries</a> in this section to read them all at once.
+      </p>
+
+      <ul class="compiler-optimizations">
+        <li class="expandable">
+          <button class="expand">JavaScript syntax tree compaction</button>
+          <div class="reveal">
+            <p>
+              The compiler uses a complex lattice of rules to compact the generated JavaScript code in release mode similar to the advanced compilation mode in Google Closure Compiler.
+              However, the compiler can often do better than Google's compiler due to certain language features (explicit integer types, for example).
+              This reduces application startup time by transferring less data over the network.
+              The Skew compiler is also a whole lot faster than Google's compiler so advanced optimizations can be enabled by default.
+            </p>
+            <pre class="skew">
+enum Type {
+  RADIANS
+  DEGREES
+  SECONDS
+  METERS
+}
+
+@export
+def format(type Type, value double) string {
+  if type == .DEGREES || type == .RADIANS {
+    if type == .RADIANS {
+      value *= 180 / Math.PI
+    }
+    return "\(value)deg"
+  }
+
+  if type == .SECONDS {
+    return "\(value)s"
+  }
+
+  assert(type == .METERS)
+  return "\(value)m"
+}
+</pre>
+            <p>
+              The code above reduces down to this JavaScript code in release mode:
+            </p>
+            <pre class="js character-wrap">(function(){format=function(a,b){return a==1||!a?(a||(b*=57.29577951308232),b+'deg'):b+(a^2?'m':'s')}})();</pre>
+            <p>
+              When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--js-mangle" flag.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Symbol renaming</button>
+          <div class="reveal">
+            <p>
+              The compiler includes a global symbol motion and renaming pass in release mode to reduce symbol name length similar to the advanced compilation mode in Google Closure Compiler.
+              Namespace nesting is removed and symbols are renamed to the shortest possible names using frequency analysis.
+              Unrelated properties and local variables can reuse the same names, which makes those names even more common and easier for gzip to compress.
+              This reduces application startup time by transferring less data over the network.
+              It also serves as a form of obfuscation if you care about that sort of thing.
+              Renaming is not done for symbols with an "@import" or "@export" annotation and for names accessed off of the special "dynamic" type.
+            </p>
+            <pre class="skew">
+namespace Demo {
+  class Vector {
+    var x double
+    var y double
+  }
+
+  class Rect {
+    var lower = Vector.new(Math.INFINITY, Math.INFINITY)
+    var upper = Vector.new(-Math.INFINITY, -Math.INFINITY)
+
+    def area double {
+      return (upper.x - lower.x) * (upper.y - lower.y)
+    }
+
+    def include(x double, y double) {
+      lower.x = Math.min(lower.x, x)
+      lower.y = Math.min(lower.y, y)
+      upper.x = Math.max(upper.x, x)
+      upper.y = Math.max(upper.y, y)
+    }
+  }
+}
+
+@export
+def test double {
+  var rect = Demo.Rect.new
+  for i in 0..100 {
+    rect.include(Math.random, Math.random)
+  }
+  return rect.area
+}
+</pre>
+            <p>
+              The code above becomes this JavaScript code in release mode.
+              Notice how the properties for both "Rect" and "Vector" can reuse the same names because they are two unrelated types:
+            </p>
+            <pre class="js character-wrap">(function(){test=function(){for(var a=new i,b=0;b&lt;100;b=b+1|0)f(a,Math.random(),Math.random());return e(a)};function e(a){return (a.b.a-a.a.a)*(a.b.b-a.a.b)}function f(d,a,b){d.a.a=Math.min(d.a.a,a),d.a.b=Math.min(d.a.b,b),d.b.a=Math.max(d.b.a,a),d.b.b=Math.max(d.b.b,b)}function h(a,b){this.a=a,this.b=b}function i(){this.a=new h(Infinity,Infinity),this.b=new h(-Infinity,-Infinity)}})();</pre>
+            <p>
+              When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--js-mangle" flag.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Function inlining</button>
+          <div class="reveal">
+            <p>
+              The compiler currently inlines simple functions where the body consists of a single expression statement or return statement and where each argument is used once.
+            </p>
+            <pre class="skew">
+class WrappedValue&lt;T> {
+  var _value T
+
+  def value T {
+    return _value
+  }
+
+  def value=(value T) {
+    _value = value
+  }
+}
+
+@export
+def test {
+  var wrapped = WrappedValue&lt;int>.new(0)
+  wrapped.value = wrapped.value + 100
+}
+</pre>
+            <p>
+              The code above becomes this JavaScript code in release mode.
+              Notice how the getter and setter functions for "value" were both inlined into a simple assignment:
+            </p>
+            <pre class="js">(function(){test=function(){var a=new c(0);a.a=a.a+100|0};function c(a){this.a=a}})();</pre>
+            <p>
+              When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--inline-functions" flag.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Constant folding</button>
+          <div class="reveal">
+            <p>
+              Constant folding does partial evaluation of the code at compile-time.
+              This often opens up opportunities for further optimizations such as dead code elimination inside the "else" branch of an "if true" statement.
+              Constant folding works well in combination with with function inlining.
+            </p>
+            <pre class="skew">
+type Color : int {
+  def r int { return (self as int) &amp; 255 }
+  def g int { return ((self as int) >> 8) &amp; 255 }
+  def b int { return ((self as int) >> 16) &amp; 255 }
+  def a int { return (self as int) >>> 24 }
+
+  def opaque Color {
+    return new(r, g, b, 255)
+  }
+}
+
+namespace Color {
+  def new(r int, g int, b int, a int) Color {
+    return (r | g &lt;&lt; 8 | b &lt;&lt; 16 | a &lt;&lt; 24) as Color
+  }
+}
+
+@export
+def isOrange(color Color) bool {
+  return color.opaque == Color.new(255, 127, 0, 255)
+}
+</pre>
+            <p>
+              The code above becomes this JavaScript code in release mode.
+              Notice how all getters have been inlined, the call to the constructor with constant arguments became a single integer literal, and the call to the constructor inside "opaque" has been partially evaluated by performing "r | g &lt;&lt; 8 | b &lt;&lt; 16" at compile time:
+            </p>
+            <pre class="js">(function(){isOrange=function(a){return b(a)==-16744449};function b(a){return a|-16777216}})();</pre>
+            <p>
+              When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--fold-constants" flag.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Real integer operations</button>
+          <div class="reveal">
+            <p>
+              JavaScript only has one set of arithmetic operators and they operate on floating-point values.
+              CPUs are much faster when working with integers so JIT compilers try really hard to figure out when the code is using numbers that behave like 32-bit integers so they can generate machine code for 32-bit integers instead of floating-point numbers and get a big speedup.
+            </p>
+            <p>
+              However, this guesswork isn't a perfect solution.
+              The code is now at the whim of the JIT heuristic engine, which may or may not be able to guess correctly.
+              These guesses are likely not even consistent between successive runs of the same code due to different optimization decisions being made based on changing timing measurements and/or execution flow.
+              Missing these optimizations can sometimes cause drastic performance issues, especially inside tight inner loops of math-heavy code.
+              Even if the JIT guesses that a particular arithmetic operator can be an integer correctly, it often doesn't have enough range information to be able to eliminate bounds checks, so the generated assembly is littered with overflow checks and deoptimization bailouts.
+            </p>
+            <p>
+              Skew has real integer operations, even when compiling to JavaScript.
+              It ensures every integer arithmetic operation is wrapped in a bitwise operation.
+              All modern JITs omit bounds checks when they can prove the checks are unnecessary, which is always the case for integer addition, subtraction, division, and remainder operations when wrapped in a bitwise operation.
+              Integer multiplication operations actually can't be done with the floating-point "*" operator because 64-bit doubles don't have enough bits to represent the result, but luckily modern JITs provide "Math.imul" to efficiently do 32-bit multiplication.
+            </p>
+            <pre class="skew">
+@export
+def test(seed int) int {
+  var value = (seed * 1103515245 + 12345) &amp; 0x7FFFFFFF # rand() from glibc
+  value++
+  value /= 2
+  return value
+}
+</pre>
+            <p>
+              The code above becomes this JavaScript code.
+              The polyfill for Math.imul is only for old JavaScript runtimes; new ones provide Math.imul.
+            </p>
+            <pre class="js">
+(function() {
+  var __imul = Math.imul ? Math.imul : function(a, b) {
+    var ah = a >> 16 &amp; 65535;
+    var bh = b >> 16 &amp; 65535;
+    var al = a &amp; 65535;
+    var bl = b &amp; 65535;
+    return al * bl + (ah * bl + al * bh &lt;&lt; 16) | 0;
+  };
+
+  test = function(seed) {
+    // rand() from glibc
+    var value = __imul(seed, 1103515245) + 12345 &amp; 2147483647;
+    value = value + 1 | 0;
+    value = value / 2 | 0;
+    return value;
+  };
+})();
+</pre>
+            <p>
+              When given that JavaScript, V8 produces the following optimized assembly code (stack checks and tagging and stuff is omitted for clarity).
+              Notice how the operands remain integers throughout the computation:
+            </p>
+            <pre class="asm">
+    ;;; &lt;@30,#18> mul-i
+65  69c96d4ec641   imul ecx,ecx,1103515245
+    ;;; &lt;@32,#20> add-i
+71  81c139300000   add ecx,0x3039              ;; debug: position 558
+    ;;; &lt;@34,#23> bit-i
+77  81e1ffffff7f   and ecx,0x7fffffff          ;; debug: position 566
+    ;;; &lt;@36,#28> add-i
+83  83c101         add ecx,0x1                 ;; debug: position 667
+    ;;; &lt;@38,#36> div-by-power-of-2-i
+86  89c8           mov eax,ecx                 ;; debug: position 694
+88  c1e81f         shr eax,31
+91  03c1           add eax,ecx
+93  d1f8           sar eax,1
+</pre>
+            <p>
+              This transformation is always performed for correctness reasons, even in debug mode.
+              Floating-point arithmetic operations are not equivalent to their integer counterparts and cannot be substituted without compromising the semantics of the code.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Devirtualization</button>
+          <div class="reveal">
+            <p>
+              Virtual functions have overhead, mostly because they prevent inlining.
+              Devirtualization detects functions that are unnecessarily virtual and rewrites them to global functions instead, which can then be optimized further.
+              It is why function inlining works on instance functions.
+            </p>
+            <pre class="skew">
+class Demo {
+  var x int
+  var y int
+
+  def add {
+    x += y
+  }
+}
+
+@export
+def test {
+  Demo.new(1, 2).add
+}
+</pre>
+            <p>
+              The code above becomes this JavaScript code in release mode.
+              Notice how the generated code doesn't use "prototype" anywhere even though the function "add" is an instance function:
+            </p>
+            <pre class="js">(function(){test=function(){c(new e(1,2))};function c(a){a.a=a.a+a.b|0}function e(a,b){this.a=a,this.b=b}})();</pre>
+            <p>
+              When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--globalize-functions" flag.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Interface removal</button>
+          <div class="reveal">
+            <p>
+              Interfaces that only have one implementation can be safely replaced with that implementation.
+              This opens up more optimization opportunities such as devirtualization and inlining.
+            </p>
+            <pre class="skew">
+# This interface has one implementation and can be removed
+interface IOne {
+  def add
+}
+
+class Single :: IOne {
+  var value = 0.0
+  def add { value++ }
+}
+
+# This interface has two implementations and cannot be removed
+interface ITwo {
+  def add
+}
+
+class First :: ITwo {
+  var value = 0.0
+  def add { value++ }
+}
+
+class Second :: ITwo {
+  var value = 0.0
+  def add { value++ }
+}
+
+@export
+def test {
+  var one IOne = Single.new
+  one.add
+
+  var two ITwo = First.new
+  two.add
+  two = Second.new
+  two.add
+}
+</pre>
+            <p>
+              The code above becomes this JavaScript code in release mode.
+              Notice how the call through the IOne interface, which only has one implementation, was completely devirtualized and inlined.
+              This is only possible because the IOne interface was able to be removed.
+            </p>
+            <pre class="js">(function(){test=function(){var a=new g;a.a++;var c=new h;c.b(),c=new i,c.b()};function g(){this.a=0}function h(){this.a=0}h.prototype.b=function(){this.a++};function i(){this.a=0}i.prototype.b=function(){this.a++}})();</pre>
+            <p>
+              When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--globalize-functions" flag.
+            </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Tree shaking</button>
+          <div class="reveal">
+            <p>
+              This removes unused code at the function level.
+              The compiler starts from functions with the "@export" and "@entry" annotations and finds all transitive dependencies.
+              Any code that wasn't reached is treated as dead and removed from the output.
+              This reduces application startup time by transferring less data over the network.
+              This is also enabled in debug mode because lots of extra unused library code makes debugging harder.
+            </p>
+          </div>
+        </li>
+      </ul>
     </section>
 
-    <footer>
-      <div class="inner">
-        <a href="https://github.com/evanw/skew">GitHub Repository</a>
-        <span>&bull;</span>
-        <a href="https://github.com/evanw/skew/issues">Issue Tracker</a>
+    <div id="live-editor" class="theme-light">
+      <div id="editor-container">
+        <div id="editor"></div>
       </div>
-    </footer>
+      <div id="editor-container-label">Input</div>
+      <div id="editor-container-buttons">
+        <div class="dropdown">
+          <button id="example-button" class="button">Load example &#9662;</button>
+          <div class="menu">
+            <div class="item" data-load="calculator-browser">Calculator</div>
+            <div class="item" data-load="raytracer">Raytracer</div>
+            <div class="item" data-load="sparks">Sparks</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="editor-generated"></div>
+      <div id="editor-generated-label">Output</div>
+      <div id="editor-generated-buttons">
+        <button id="run-button" class="button">Run</button>
+        <div class="dropdown">
+          <button id="target-button" class="button"><span>JS (Debug)</span> &#9662;</button>
+          <div class="menu">
+            <div class="item" data-target="js">JS (Debug)</div>
+            <div class="item" data-target="js" data-release="true">JS (Release)</div>
+            <div class="item" data-target="c#">C#</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
 
@@ -2260,4 +2461,4 @@ def @include(name string)
 </script>
 
 <script src="ace.min.js"></script>
-<script src="index.js"></script>
+<script src="script.js"></script>
