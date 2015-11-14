@@ -350,7 +350,7 @@ def debugLog(text string) {
 @export
 def sum(x int, y int) int {
   if x + y &lt; 0 {
-    debugLog("warning: " + x.toString + " + " + y.toString + " &lt; 0")
+    debugLog("warning: \(x) + \(y) &lt; 0")
   }
   return x + y
 }</pre>
@@ -477,13 +477,13 @@ def format(type Type, value double) string {
     if type == .RADIANS {
       value *= 180 / Math.PI
     }
-    return value.toString + "deg"
+    return "\(value)deg"
   }
   if type == .SECONDS {
-    return value.toString + "s"
+    return "\(value)s"
   }
   assert(type == .METERS)
-  return value.toString + "m"
+  return "\(value)m"
 }
 </pre>
               <p>
@@ -869,7 +869,7 @@ def main {
         default { output.append(parseFloat(tokens[i])) }
       }
     }
-    console.log("answer: " + output.first.toString)
+    console.log("answer: \(output.first)")
     question()
   }
   question = => readline.question("> ", answer)
@@ -1664,7 +1664,7 @@ def debugLog(text string) {
 @export
 def sum(x int, y int) int {
   if x + y &lt; 0 {
-    debugLog("warning: " + x.toString + " + " + y.toString + " &lt; 0")
+    debugLog("warning: \(x) + \(y) &lt; 0")
   }
   return x + y
 }</pre>
@@ -1869,7 +1869,7 @@ def main int {
                 A string is an immutable sequence of unicode code units.
                 Multi-line strings are allowed.
                 String literals must be double-quoted (single quotes are for C-style character literals, which turn into an int with the unicode code point for that character).
-                Valid escape sequences are "\0", "\r", "\n", "\t", "\e", "\\", "\"", "\'", and hex-style "\xFF".
+                Valid escape sequences are "\0", "\r", "\n", "\t", "\\", "\"", "\'", and hex-style "\xFF".
               </p>
               <p>
                 Strings are stored using the natural string encoding for the target language.
