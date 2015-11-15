@@ -824,7 +824,14 @@
     if (generated && currentTarget === 'js') {
       runButton.classList.remove('disabled');
       runButton.onclick = function() {
-        open('', '', 'width=660, height=500').document.write('<pre><script>' + generated + '</script></pre>');
+        var popup = open('', '', 'width=660, height=500');
+
+        // Firefox bug: Need to wrap document.write() with document.open() and
+        // document.close() or use of requestAnimationFrame() runs at 1fps.
+        // More info: https://bugzilla.mozilla.org/show_bug.cgi?id=1224902
+        popup.document.open();
+        popup.document.write('<pre><script>' + generated + '</script></pre>');
+        popup.document.close();
       };
     } else {
       runButton.classList.add('disabled');
