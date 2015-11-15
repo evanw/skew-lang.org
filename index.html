@@ -309,6 +309,9 @@ true
 
 # Type "string"
 "abc"
+"multi-
+line
+strings"
 
 # Type "List&lt;int>"
 [1, 2, 3]
@@ -1601,7 +1604,7 @@ class double {
           <div class="reveal">
             <p>
               A string is an immutable sequence of unicode code units.
-              Multi-line strings are allowed.
+              Multi-line strings are allowed without needing any special syntax.
               String literals must be double-quoted (single quotes are for C-style character literals, which turn into an int with the unicode code point for that character).
               Valid escape sequences are "\0", "\r", "\n", "\t", "\\", "\"", "\'", and hex-style "\xFF".
             </p>
@@ -2429,6 +2432,7 @@ def test {
             <div class="item" data-load="calculator-browser">Calculator</div>
             <div class="item" data-load="raytracer">Raytracer</div>
             <div class="item" data-load="sparks">Sparks</div>
+            <div class="item" data-load="webgl">WebGL</div>
           </div>
         </div>
       </div>

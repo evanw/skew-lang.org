@@ -393,6 +393,7 @@ pre .button {
   top: 15px;
   right: 50%;
   margin-right: 12px;
+  z-index: 7; /* ace_scrollbar is 6 */
 }
 
 #editor-generated {
