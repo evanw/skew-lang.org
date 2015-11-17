@@ -1234,7 +1234,7 @@ def test(log Log) {
 var console dynamic
 </pre>
             <p>
-              The "==" and "!=" operators cannot be overloaded since they test for reference equality and need to handle implicit bidirectional type conversions.
+              The "==" and "!=" operators cannot be overloaded since they test for reference equality when using generics and this would lead to subtle bugs since generics are implemented with type erasure.
               The "&amp;&amp;" and "||" operators cannot be overloaded because of their special short-circuit evaluation behavior.
               The "=" operator cannot be overridden since that's too confusing in a language that lacks value types.
               If the "=" were overridable, objects would then be copied on assignment but would be passed by reference as arguments to function calls.
