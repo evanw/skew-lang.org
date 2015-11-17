@@ -154,7 +154,7 @@ namespace document {
         The release version of the compiler is cross-compiled to JavaScript and node is a JavaScript runtime.
         Installing node also installs a package manager called <a href="https://www.npmjs.com">npm</a> that can be used to install the compiler:
       </p>
-      <pre>npm install -g skew</pre>
+      <pre><script>document.write(/Win/.test(navigator.platform) ? '' : 'sudo ')</script>npm install -g skew</pre>
       <p>
         The compiler command is called "skewc".
         Run "skewc --help" to see a list of all available command-line flags.
