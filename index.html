@@ -1087,10 +1087,6 @@ def test {
 # Binary, not overridable
 = &amp;&amp; || == != &lt; > &lt;= >=
 ?. ?? ?=
-
-# For list and map literals
-[new] [...]
-{new} {...}
 </pre>
             <p>
               An operator is overloaded by declaring an instance function on the target type with that operator name.
@@ -1176,48 +1172,6 @@ def test(list List&lt;Point>) {
 }
 </pre>
             <p>
-              There are also special operators that allow the type to integrate with list and map literals.
-              The simplest way of doing this is with special constructors called "[new]" and "{new}" that take lists as arguments.
-              The compiler puts all expressions inside the list or map literal in a list and passes it to the constructor.
-            </p>
-            <pre class="skew">
-class DemoList&lt;T> {
-  def [new](values List&lt;T>) {}
-}
-
-class DemoMap&lt;K, V> {
-  def {new}(keys List&lt;K>, values List&lt;V>) {}
-}
-
-@export
-def test {
-  var list DemoList&lt;int> = [1, 2, 3]
-  var map DemoMap&lt;int, int> = {1: 2, 3: 4}
-}
-</pre>
-            <p>
-              The more flexible way of doing this is with the special "[...]" and "{...}" instance functions.
-              The compiler constructs a new object of that type and builds a chain of calls to those special instance functions with one call for each element in the list or map literal.
-              This allows the type to support different types of values in the same literal.
-            </p>
-            <pre class="skew">
-class DemoList {
-  def [...](value int) DemoList { return self }
-  def [...](value string) DemoList { return self }
-}
-
-class DemoMap {
-  def {...}(key int, value int) DemoMap { return self }
-  def {...}(key string, value string) DemoMap { return self }
-}
-
-@export
-def test {
-  var list DemoList = [1, "2"]
-  var map DemoMap = {1: 2, "3": "4"}
-}
-</pre>
-            <p>
               Mutating operators can be synthesized from non-mutating operators.
               For example, a type that defines the "+" operator also gets the "+=" and "++" operators automatically:
             </p>
@@ -1285,6 +1239,54 @@ var console dynamic
               The "=" operator cannot be overridden since that's too confusing in a language that lacks value types.
               If the "=" were overridable, objects would then be copied on assignment but would be passed by reference as arguments to function calls.
             </p>
+          </div>
+        </li>
+
+        <li class="expandable">
+          <button class="expand">Custom list and map literals</button>
+          <div class="reveal">
+            <p>
+              The syntax for list and map literals isn't just for the native list and map types; it's also available to user-defined types.
+              The simplest way of doing this is with special constructors called "[new]" and "{new}" that take lists as arguments.
+              The compiler puts all expressions inside the list or map literal in a list and passes it to the constructor.
+            </p>
+            <pre class="skew">
+class DemoList&lt;T> {
+  def [new](values List&lt;T>) {}
+}
+
+class DemoMap&lt;K, V> {
+  def {new}(keys List&lt;K>, values List&lt;V>) {}
+}
+
+@export
+def test {
+  var list DemoList&lt;int> = [1, 2, 3]
+  var map DemoMap&lt;int, int> = {1: 2, 3: 4}
+}
+</pre>
+            <p>
+              The more flexible way of doing this is with the special "[...]" and "{...}" instance functions.
+              The compiler constructs a new object of that type and builds a chain of calls to those special instance functions with one call for each element in the list or map literal.
+              This allows the type to support different types of values in the same literal.
+            </p>
+            <pre class="skew">
+class DemoList {
+  def [...](value int) DemoList { return self }
+  def [...](value string) DemoList { return self }
+}
+
+class DemoMap {
+  def {...}(key int, value int) DemoMap { return self }
+  def {...}(key string, value string) DemoMap { return self }
+}
+
+@export
+def test {
+  var list DemoList = [1, "2"]
+  var map DemoMap = {1: 2, "3": "4"}
+}
+</pre>
           </div>
         </li>
 

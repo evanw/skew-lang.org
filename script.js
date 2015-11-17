@@ -119,10 +119,10 @@
 
   SkewMode.prototype.getTokenizer = function() {
     var isEntityKeyword = /^(?:catch|class|const|def|enum|for|interface|namespace|over|var)$/;
-    var isKeyword = /^(?:as|break|case|catch|class|const|continue|def|default|else|enum|finally|for|if|in|interface|is|namespace|over|return|self|super|switch|throw|try|type|var|while|@[A-Za-z_][A-Za-z0-9_]*)$/;
+    var isKeyword = /^(?:as|break|case|catch|class|const|continue|def|default|else|enum|finally|for|if|in|interface|is|namespace|over|return|switch|throw|try|type|var|while|@[A-Za-z_][A-Za-z0-9_]*)$/;
     var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
     var isWhitespace = /^\s+$/;
-    var isConstant = /^(?:true|false|null|_?[A-Z][A-Z0-9_]+)$/;
+    var isConstant = /^(?:true|false|null|self|super|_?[A-Z][A-Z0-9_]+)$/;
     var isNumber = /^(?:\d+\.\d+[eE][-+]?\d+|\d+\.\d+|0b[0-1]+|0o[0-7]+|0x[A-Fa-f0-9]+|\d+[eE][-+]?\d+|\d+|'.*)$/;
     var isType = /^(?:int|string|double|bool|fn|_?[A-Z][A-Za-z0-9_]*)$/;
     var self = this;
@@ -249,12 +249,14 @@
   };
 
   function getJavaScriptTokenizer() {
-    var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|import|in|instanceof|let|new|null|return|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)$/;
+    var isKeyword = /^(?:break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|return|super|switch|throw|try|typeof|var|void|while|with|yield)$/;
+    var isConstant = /^(?:true|false|null|this|_?[A-Z][A-Z0-9_]+)$/;
+    var isNumber = /^(?:[-+]?\d*\.?\d+([eE][-+]?\d+)?)$/;
     var self = this;
 
     return {
       getLineTokens: function(line, state, row) {
-        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[-+]?\d*\.?\d+([eE][-+]?\d+)?)/g;
         var tokens = [];
         var previous = 0;
 
@@ -279,6 +281,8 @@
               value.slice(0, 2) === '//' ? 'comment' :
               '\'"'.indexOf(value[0]) >= 0 ? 'string' :
               isKeyword.test(value) ? 'keyword' :
+              isConstant.test(value) ? 'constant' :
+              isNumber.test(value) ? 'number' :
               'text',
             value: value,
           });
@@ -304,13 +308,23 @@
   function getAssemblyTokenizer() {
     var isKeyword = /^(?:add|and|imul|mov|sar|shr)$/;
     var isRegister = /^(?:eax|ecx)$/;
+    var isNumber = /^(?:(?:0x)?[0-9A-Fa-f]+)$/;
     var self = this;
 
     return {
       getLineTokens: function(line, state, row) {
-        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|;.*)/g;
+        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|;.*|(?:0x)?[0-9A-Fa-f]+)/g;
         var tokens = [];
         var previous = 0;
+
+        var match = /^\w+\s+\w+\s+/.exec(line);
+        if (match) {
+          previous = match[0].length;
+          tokens.push({
+            type: 'text',
+            value: line.slice(0, previous),
+          });
+        }
 
         while (true) {
           regex.lastIndex = previous;
@@ -333,6 +347,7 @@
               value[0] === ';' ? 'comment' :
               isKeyword.test(value) ? 'keyword' :
               isRegister.test(value) ? 'constant' :
+              isNumber.test(value) ? 'number' :
               'text',
             value: value,
           });
@@ -356,12 +371,14 @@
   }
 
   function getCSharpTokenizer() {
-    var isKeyword = /^(?:abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|virtual|void|volatile|while)$/;
+    var isKeyword = /^(?:abstract|as|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|throw|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|virtual|void|volatile|while)$/;
+    var isConstant = /^(?:true|false|null|this|base|_?[A-Z][A-Z0-9_]+)$/;
+    var isNumber = /^(?:[-+]?\d*\.?\d+([eE][-+]?\d+)?)$/;
     var self = this;
 
     return {
       getLineTokens: function(line, state, row) {
-        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*")/g;
+        var regex = /(\b[A-Za-z_][A-Za-z0-9_]*\b|\/\/.*|"(?:[^"\\]|\\.)*"|[-+]?\d*\.?\d+([eE][-+]?\d+)?)/g;
         var tokens = [];
         var previous = 0;
 
@@ -386,6 +403,8 @@
               value.slice(0, 2) === '//' ? 'comment' :
               value[0] === '"' ? 'string' :
               isKeyword.test(value) ? 'keyword' :
+              isConstant.test(value) ? 'constant' :
+              isNumber.test(value) ? 'number' :
               'text',
             value: value,
           });
