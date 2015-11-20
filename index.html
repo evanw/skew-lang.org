@@ -1291,6 +1291,93 @@ def test {
         </li>
 
         <li class="expandable">
+          <button class="expand">Custom XML literals</button>
+          <div class="reveal">
+            <p>
+              XML-style object initialization syntax is supported as a convenient way to initialize trees of objects.
+              Each tag constructs an instance of the type corresponding to the tag name.
+              All attributes in the XML tag become assignments to variables on that instance.
+              Child elements are appended using a chain of special instance functions called "&lt;>...&lt;/>".
+            </p>
+            <pre class="skew">
+@entry
+def test {
+  var multiply =
+    &lt;Reduce start=1 reduce=((a, b) => a * b.value)>
+      &lt;Literal value=2/>
+      &lt;Literal value=3/>
+      &lt;Literal value=4/>
+    &lt;/Reduce>
+  document.write(multiply.value)
+}
+
+class Node {
+  var children List&lt;Node> = []
+
+  # The compiler uses this function to build a chain of appends
+  def &lt;>...&lt;/>(child Node) Node {
+    children.append(child)
+    return self
+  }
+
+  def value double
+}
+
+class Reduce : Node {
+  var start = 0.0
+  var reduce fn(double, Node) double = null
+
+  over value double {
+    var result = start
+    for child in children {
+      result = reduce(result, child)
+    }
+    return result
+  }
+}
+
+class Literal : Node {
+  var _value = 0.0
+
+  over value double {
+    return _value
+  }
+
+  # Setter functions also work with XML literals
+  def value=(value double) {
+    _value = value
+  }
+}
+
+@import
+const document dynamic
+</pre>
+            <p>
+              The more flexible way of doing this is with the special "[...]" and "{...}" instance functions.
+              The compiler constructs a new object of that type and builds a chain of calls to those special instance functions with one call for each element in the list or map literal.
+              This allows the type to support different types of values in the same literal.
+            </p>
+            <pre class="skew">
+class DemoList {
+  def [...](value int) DemoList { return self }
+  def [...](value string) DemoList { return self }
+}
+
+class DemoMap {
+  def {...}(key int, value int) DemoMap { return self }
+  def {...}(key string, value string) DemoMap { return self }
+}
+
+@export
+def test {
+  var list DemoList = [1, "2"]
+  var map DemoMap = {1: 2, "3": "4"}
+}
+</pre>
+          </div>
+        </li>
+
+        <li class="expandable">
           <button class="expand">Wrapped types</button>
           <div class="reveal">
             <p>
