@@ -1234,7 +1234,7 @@ def test(log Log) {
 var console dynamic
 </pre>
             <p>
-              The "==" and "!=" operators cannot be overloaded since they test for reference equality when using generics and this would lead to subtle bugs since generics are implemented with type erasure.
+              The "==" and "!=" operators cannot be overloaded because they test for reference equality when using generics and this would lead to subtle bugs since generics are implemented with type erasure.
               The "&amp;&amp;" and "||" operators cannot be overloaded because of their special short-circuit evaluation behavior.
               The "=" operator cannot be overridden since that's too confusing in a language that lacks value types.
               If the "=" were overridable, objects would then be copied on assignment but would be passed by reference as arguments to function calls.
@@ -1351,28 +1351,6 @@ class Literal : Node {
 
 @import
 const document dynamic
-</pre>
-            <p>
-              The more flexible way of doing this is with the special "[...]" and "{...}" instance functions.
-              The compiler constructs a new object of that type and builds a chain of calls to those special instance functions with one call for each element in the list or map literal.
-              This allows the type to support different types of values in the same literal.
-            </p>
-            <pre class="skew">
-class DemoList {
-  def [...](value int) DemoList { return self }
-  def [...](value string) DemoList { return self }
-}
-
-class DemoMap {
-  def {...}(key int, value int) DemoMap { return self }
-  def {...}(key string, value string) DemoMap { return self }
-}
-
-@export
-def test {
-  var list DemoList = [1, "2"]
-  var map DemoMap = {1: 2, "3": "4"}
-}
 </pre>
           </div>
         </li>
