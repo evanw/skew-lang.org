@@ -570,22 +570,20 @@ def test {
               One unusual thing about return statements is the handling of return statements where the value is on the next line.
               This case is trivial in semicolon-terminated languages like C because the value comes before the semicolon.
               In languages like JavaScript, automatic semicolon insertion gets in the way and causes the code to behave incorrectly (return undefined instead of the value).
-              Skew doesn't have semicolons or automatic semicolon insertion and so doesn't suffer from this issue.
-              In Skew, an expression following a return statement is considered to be the returned value if the return statement is inside a function with non-empty a return type.
+              Skew doesn't suffer from this issue despite not having semicolons or automatic semicolon insertion.
+              In Skew, an expression following a return statement is considered to be the returned value.
             </p>
             <pre class="skew">
-# This function returns "int" so the value is returned
 @export
 def add(a int, b int) int {
   return
-  a + b
+    a + b
 }
 
-# This function returns nothing so the value is ignored
 @export
 def subtract(a int, b int) {
   return
-  a - b # warning: Unused expression
+    a - b # error: Cannot return a value inside a function without a return type
 }
 </pre>
           </div>
