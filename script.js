@@ -118,8 +118,8 @@
   SkewMode.prototype = new BaseMode;
 
   SkewMode.prototype.getTokenizer = function() {
-    var isEntityKeyword = /^(?:catch|class|const|def|enum|for|interface|namespace|over|var)$/;
-    var isKeyword = /^(?:as|break|case|catch|class|const|continue|def|default|else|enum|finally|for|if|in|interface|is|namespace|over|return|switch|throw|try|type|var|while|@[A-Za-z_][A-Za-z0-9_]*)$/;
+    var isEntityKeyword = /^(?:catch|class|const|def|enum|flags|for|interface|namespace|over|var)$/;
+    var isKeyword = /^(?:as|break|case|catch|class|const|continue|def|default|else|enum|flags|finally|for|if|in|interface|is|namespace|over|return|switch|throw|try|type|var|while|@[A-Za-z_][A-Za-z0-9_]*)$/;
     var isIdentifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
     var isWhitespace = /^\s+$/;
     var isConstant = /^(?:true|false|null|self|super|_?[A-Z][A-Z0-9_]+)$/;

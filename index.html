@@ -886,9 +886,11 @@ def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
             <pre class="skew">
 @export
 class Entry {
+  # Enums are assigned from the sequence 0, 1, 2, 3, ...
   enum Kind {
     FILE
     DIRECTORY
+    SYMLINK
   }
 
   const kind Kind
@@ -906,6 +908,10 @@ class Entry {
         for child in children {
           child.visitFiles(visitor)
         }
+      }
+
+      # This is short for "case Entry.Kind.SYMLINK"
+      case .SYMLINK {
       }
     }
   }
@@ -928,6 +934,30 @@ enum Tag {
 @export
 def test string {
   return Tag.DIV.toHTML # This returns "&lt;div>"
+}
+</pre>
+            <p>
+              There is also built-in support for integer flags.
+              Use a "flags" declaration instead of an "enum" declaration.
+              Unlike normal enums, these special enums get "~", "&amp;", "|", "^", and "in" operators.
+              The literal "0" also stands for the empty set.
+            </p>
+            <pre class="skew">
+# Flags are assigned from the sequence 1, 2, 4, 8, ...
+flags Modifiers {
+  COMMAND
+  CONTROL
+  OPTION
+  SHIFT
+}
+
+@export
+def test(modifiers Modifiers) {
+  modifiers |= .COMMAND | .CONTROL
+
+  if .OPTION in modifiers {
+    modifiers &amp;= ~.SHIFT
+  }
 }
 </pre>
           </div>
