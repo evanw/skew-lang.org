@@ -309,8 +309,7 @@ true
 
 # Type "string"
 "abc"
-"multi-
-line
+"multi-line
 strings"
 
 # Type "List&lt;int>"
@@ -1330,16 +1329,16 @@ def test {
               XML-style object initialization syntax is supported as a convenient way to initialize trees of objects.
               Each tag constructs an instance of the type corresponding to the tag name.
               All attributes in the XML tag become assignments to variables on that instance.
-              Child elements are appended using a chain of special instance functions called "&lt;>...&lt;/>".
+              Child elements are appended using a chain of special instance functions called <span class="chunk">"&lt;>...&lt;/>"</span>.
             </p>
             <pre class="skew">
 @entry
 def test {
   var multiply =
     &lt;Reduce start=1 reduce=((a, b) => a * b.value)>
-      &lt;Literal value=2/>
-      &lt;Literal value=3/>
-      &lt;Literal value=4/>
+      &lt;Number value=2/>
+      &lt;Number value=3/>
+      &lt;Number value=4/>
     &lt;/Reduce>
   document.write(multiply.value)
 }
@@ -1369,7 +1368,7 @@ class Reduce : Node {
   }
 }
 
-class Literal : Node {
+class Number : Node {
   var _value = 0.0
 
   over value double {
@@ -1614,7 +1613,7 @@ def test {
 </pre>
             <p>
               The "dynamic" type poisons everything it touches.
-              For example, "1 + x" has a dynamic type if "x" is dynamic because the compiler can't tell what type the expression will be ("x" could hold an int, a double, a string, or even something nonsensical like an object).
+              For example, "x + 1" has a dynamic type if "x" is dynamic because the compiler can't tell what type the expression will be ("x" could hold an int, a double, a string, or even something nonsensical like an object).
               This makes it easy to bypass the compiler's type system by casting the value to the "dynamic" type first.
             </p>
             <p>
@@ -2254,7 +2253,7 @@ def @include(name string)
               The Skew compiler is also a whole lot faster than Google's compiler so advanced optimizations can be enabled by default.
             </p>
             <pre class="skew">
-enum Type {
+enum Kind {
   RADIANS
   DEGREES
   SECONDS
@@ -2262,19 +2261,19 @@ enum Type {
 }
 
 @export
-def format(type Type, value double) string {
-  if type == .DEGREES || type == .RADIANS {
-    if type == .RADIANS {
+def format(kind Kind, value double) string {
+  if kind == .DEGREES || kind == .RADIANS {
+    if kind == .RADIANS {
       value *= 180 / Math.PI
     }
     return "\(value)deg"
   }
 
-  if type == .SECONDS {
+  if kind == .SECONDS {
     return "\(value)s"
   }
 
-  assert(type == .METERS)
+  assert(kind == .METERS)
   return "\(value)m"
 }
 </pre>
@@ -2400,7 +2399,7 @@ def test {
         </li>
 
         <li class="expandable">
-          <button class="expand">Real integer operations</button>
+          <button class="expand">Actual integer operations</button>
           <div class="reveal">
             <p>
               JavaScript only has one set of arithmetic operators and they operate on floating-point values.
@@ -2414,7 +2413,7 @@ def test {
               Even if the JIT guesses that a particular arithmetic operator can be an integer correctly, it often doesn't have enough range information to be able to eliminate bounds checks, so the generated assembly is littered with overflow checks and deoptimization bailouts.
             </p>
             <p>
-              Skew has real integer operations, even when compiling to JavaScript.
+              Skew has actual integer operations, even when compiling to JavaScript.
               It ensures every integer arithmetic operation is wrapped in a bitwise operation.
               All modern JITs omit bounds checks when they can prove the checks are unnecessary, which is always the case for integer addition, subtraction, division, and remainder operations when wrapped in a bitwise operation.
               Integer multiplication operations actually can't be done with the floating-point "*" operator because 64-bit doubles don't have enough bits to represent the result, but luckily modern JITs provide "Math.imul" to efficiently do 32-bit multiplication.
