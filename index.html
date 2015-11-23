@@ -875,7 +875,7 @@ def pack&lt;A, B>(first A, second B) Pair&lt;A, B> {
         </li>
 
         <li class="expandable">
-          <button class="expand">Enums</button>
+          <button class="expand">Enums and flags</button>
           <div class="reveal">
             <p>
               An enum is a compile-time integer constant.
@@ -953,10 +953,15 @@ flags Modifiers {
 
 @export
 def test(modifiers Modifiers) {
-  modifiers |= .COMMAND | .CONTROL
+  modifiers |= .COMMAND
+  modifiers &amp;= ~.SHIFT
 
   if .OPTION in modifiers {
-    modifiers &amp;= ~.SHIFT
+    modifiers = 0 # The value "0" is the empty set
+  }
+
+  if .CONTROL in modifiers {
+    modifiers = ~0 # The value "~0" sets all flags
   }
 }
 </pre>
@@ -1405,27 +1410,108 @@ def escapeForCSV(text string) CSV {
               Wrapped types can also be used to add encapsulation without the overhead of additional allocation.
               Instance functions added to wrapped types are automatically rewritten as global functions during compilation that take the instance as an extra first argument.
             </p>
+            <pre class="skew" data-content="color-snippet"></pre>
+            <p>
+              Another use of wrapped types is to provide a nice object-oriented API on top of an index into an array of data.
+              This is sort of analogous to pointers in C, although they don't need to all be in the same address space like emscripten and aren't subject to fragmentation issues.
+              Pointer-style wrapped types can generate very tight code in release mode.
+            </p>
             <pre class="skew">
-type Color : int {
-  def r int { return (self as int) &amp; 255 }
-  def g int { return ((self as int) >> 8) &amp; 255 }
-  def b int { return ((self as int) >> 16) &amp; 255 }
-  def a int { return (self as int) >>> 24 }
+# This represents a "pointer" to a node in a tree
+type Node&lt;T> : int {
+  def value(tree Tree&lt;T>) T {
+    return (tree as List&lt;T>)[self as int]
+  }
 
-  def opaque Color {
-    return new(r, g, b, 255)
+  def hasChildren(tree Tree&lt;T>) bool {
+    return rightChild as int &lt; tree.nodeCount
+  }
+
+  def parent Node&lt;T> {
+    return ((self as int - 1) >> 1) as Node&lt;T>
+  }
+
+  def leftChild Node&lt;T> {
+    return ((self as int) * 2 + 1) as Node&lt;T>
+  }
+
+  def rightChild Node&lt;T> {
+    return ((self as int) * 2 + 2) as Node&lt;T>
   }
 }
 
-namespace Color {
-  def new(r int, g int, b int, a int) Color {
-    return (r | g &lt;&lt; 8 | b &lt;&lt; 16 | a &lt;&lt; 24) as Color
+# This is a binary tree stored as a flat list
+type Tree&lt;T> : List&lt;T> {
+  def root Node&lt;T> {
+    return 0 as Node&lt;T>
+  }
+
+  def nodeCount int {
+    return (self as List&lt;T>).count
+  }
+
+  def toString(cb fn(T) string) string {
+    return _toString(root, cb, "\n  ")
+  }
+
+  def _toString(node Node&lt;T>, cb fn(T) string, indent string) string {
+    if !node.hasChildren(self) {
+      return "- " + cb(node.value(self))
+    }
+
+    return "- " + cb(node.value(self)) +
+      indent + _toString(node.leftChild, cb, indent + "  ") +
+      indent + _toString(node.rightChild, cb, indent + "  ")
+  }
+}
+
+namespace Tree {
+  def new(values List&lt;T>) Tree&lt;T> {
+    return values as Tree&lt;T>
+  }
+}
+
+@entry
+def test {
+  var tree = Tree&lt;int>.new([4, 2, 6, 1, 3, 5, 7])
+  document.write(tree.toString(x => x.toString))
+}
+
+@import
+const document dynamic
+</pre>
+            <p>
+              Wrapped types can also be used to create safe immutable wrappers for other APIs.
+              If they use function inlining correctly, these wrappers won't have any runtime performance overhead.
+              For example, the following code implements a simple read-only list type with the same efficiency of a built-in mutable list in release mode:
+            </p>
+            <pre class="skew">
+# An immutable wrapper for a List&lt;T> that is safe to share.
+# Call "clone" to get back a mutable list.
+type FrozenList&lt;T> : List&lt;T> {
+  def [](index int) T  { return (self as List&lt;T>)[index] }
+  def count int        { return (self as List&lt;T>).count }
+  def isEmpty bool     { return (self as List&lt;T>).isEmpty }
+  def thaw List&lt;T>     { return (self as List&lt;T>).clone }
+  def in(value T) bool { return value in (self as List&lt;T>) }
+}
+
+class List {
+  def freeze FrozenList&lt;T> {
+    return clone as FrozenList&lt;T>
   }
 }
 
 @export
-def isOrange(color Color) bool {
-  return color.opaque == Color.new(255, 127, 0, 255)
+def test {
+  var list = [1, 2, 3]
+  list.append(4)
+
+  var frozen = list.freeze
+  frozen.append(5) # error: "append" is not declared on type "FrozenList&lt;int>"
+
+  var thawed = frozen.thaw
+  thawed.append(6)
 }
 </pre>
           </div>
@@ -2301,34 +2387,12 @@ def test {
               This often opens up opportunities for further optimizations such as dead code elimination inside the "else" branch of an "if true" statement.
               Constant folding works well in combination with with function inlining.
             </p>
-            <pre class="skew">
-type Color : int {
-  def r int { return (self as int) &amp; 255 }
-  def g int { return ((self as int) >> 8) &amp; 255 }
-  def b int { return ((self as int) >> 16) &amp; 255 }
-  def a int { return (self as int) >>> 24 }
-
-  def opaque Color {
-    return new(r, g, b, 255)
-  }
-}
-
-namespace Color {
-  def new(r int, g int, b int, a int) Color {
-    return (r | g &lt;&lt; 8 | b &lt;&lt; 16 | a &lt;&lt; 24) as Color
-  }
-}
-
-@export
-def isOrange(color Color) bool {
-  return color.opaque == Color.new(255, 127, 0, 255)
-}
-</pre>
+            <pre class="skew" data-content="color-snippet"></pre>
             <p>
               The code above becomes this JavaScript code in release mode.
-              Notice how all getters have been inlined, the call to the constructor with constant arguments became a single integer literal, and the call to the constructor inside "opaque" has been partially evaluated by performing "r | g &lt;&lt; 8 | b &lt;&lt; 16" at compile time:
+              Notice how all getters have been inlined, the call to the constructor with constant arguments became a single integer literal, and the call to the constructor inside "opaque" has been partially evaluated by performing "r &lt;&lt; 16 | g &lt;&lt; 8 | b" at compile time:
             </p>
-            <pre class="js">(function(){isOrange=function(a){return b(a)==-16744449};function b(a){return a|-16777216}})();</pre>
+            <pre class="js">(function(){isOrange=function(a){return b(a)==-33024};function b(a){return a|-16777216}})();</pre>
             <p>
               When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--fold-constants" flag.
             </p>
