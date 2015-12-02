@@ -1329,16 +1329,16 @@ def test {
               XML-style object initialization syntax is supported as a convenient way to initialize trees of objects.
               Each tag constructs an instance of the type corresponding to the tag name.
               All attributes in the XML tag become assignments to variables on that instance.
-              Child elements are appended using a chain of special instance functions called <span class="chunk">"&lt;>...&lt;/>"</span>.
+              Child elements are appended using special instance functions called <span class="chunk">"&lt;>...&lt;/>"</span>.
             </p>
             <pre class="skew">
 @entry
 def test {
   var multiply =
     &lt;Reduce start=1 reduce=((a, b) => a * b.value)>
-      &lt;Number value=2/>
-      &lt;Number value=3/>
-      &lt;Number value=4/>
+      for i in [2, 3, 4] {
+        &lt;Number value=i/>
+      }
     &lt;/Reduce>
   document.write(multiply.value)
 }
@@ -1346,10 +1346,9 @@ def test {
 class Node {
   var children List&lt;Node> = []
 
-  # The compiler uses this function to build a chain of appends
-  def &lt;>...&lt;/>(child Node) Node {
+  # The compiler uses this function to append children
+  def &lt;>...&lt;/>(child Node) {
     children.append(child)
-    return self
   }
 
   def value double
@@ -2391,7 +2390,7 @@ def test {
               The code above becomes this JavaScript code in release mode.
               Notice how all getters have been inlined, the call to the constructor with constant arguments became a single integer literal, and the call to the constructor inside "opaque" has been partially evaluated by performing "r &lt;&lt; 16 | g &lt;&lt; 8 | b" at compile time:
             </p>
-            <pre class="js">(function(){isOrange=function(a){return b(a)==-33024};function b(a){return a|-16777216}})();</pre>
+            <pre class="js">(function(){isOrange=function(a){return b(a)==-33024};function b(a){return a|255&lt;&lt;24}})();</pre>
             <p>
               When not enabled as part of the "--release" flag, this pass can be selectively enabled with the "--fold-constants" flag.
             </p>
