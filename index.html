@@ -160,7 +160,7 @@ namespace document {
         Run "skewc --help" to see a list of all available command-line flags.
         Example usage:
       </p>
-      <pre>skewc <span class="chunk">src/*.sk</span> <span class="chunk">--output-file=compiled.js</span> <span class="chunk">--target=js</span> <span class="chunk">--release</span></pre>
+      <pre>skewc <span class="chunk">src/*.sk</span> <span class="chunk">--output-file=compiled.js</span> <span class="chunk">--release</span></pre>
 
       <h4>Examples</h4>
 
@@ -181,7 +181,7 @@ namespace document {
               Invoke the compiler to generate JavaScript code.
               Any compilation errors will show up here:
             </p>
-            <pre>skewc sparks.sk <span class="chunk">--output-file=sparks.js</span> <span class="chunk">--target=js</span></pre>
+            <pre>skewc sparks.sk <span class="chunk">--output-file=sparks.js</span></pre>
             <p>
               Create another file called "index.html" to serve the compiled code:
             </p>
@@ -193,7 +193,7 @@ namespace document {
               Open "index.html" in a browser to see the app.
               To build a production-ready version of your app, just add the <span class="chunk">"--release"</span> flag to the end of the compiler invocation:
             </p>
-            <pre>skewc sparks.sk <span class="chunk">--output-file=sparks.js</span> <span class="chunk">--target=js</span> <span class="chunk">--release</span></pre>
+            <pre>skewc sparks.sk <span class="chunk">--output-file=sparks.js</span> <span class="chunk">--release</span></pre>
           </div>
         </li>
 
@@ -208,7 +208,7 @@ namespace document {
               Invoke the compiler to generate JavaScript code.
               Any compilation errors will show up here:
             </p>
-            <pre>skewc calculator.sk <span class="chunk">--output-file=calculator.js</span> <span class="chunk">--target=js</span></pre>
+            <pre>skewc calculator.sk <span class="chunk">--output-file=calculator.js</span></pre>
             <p>
               That's it!
               Run the generated code to see the app:
@@ -228,7 +228,7 @@ namespace document {
               Invoke the compiler to generate C# code.
               Any compilation errors will show up here:
             </p>
-            <pre>skewc calculator.sk <span class="chunk">--output-file=calculator.cs</span> <span class="chunk">--target=cs</span></pre>
+            <pre>skewc calculator.sk <span class="chunk">--output-file=calculator.cs</span></pre>
             <p>
               Compile the C# code to generate a .NET executable.
               The example here uses <a href="http://www.mono-project.com/">Mono</a>, an open-source implementation of Microsoft's .NET Framework.
