@@ -818,6 +818,9 @@
     var allDiagnostics = [];
     skewMode.diagnosticsByLine = {};
     data.log.diagnostics.forEach(function(diagnostic) {
+      if (diagnostic.range === null) {
+        return;
+      }
       var start = diagnostic.range.start;
       var diagnostics = skewMode.diagnosticsByLine[start.line];
       if (!diagnostics) {
