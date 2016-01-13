@@ -2433,11 +2433,7 @@ def test(seed int) int {
             <pre class="js">
 (function() {
   var __imul = Math.imul ? Math.imul : function(a, b) {
-    var ah = a >> 16 &amp; 65535;
-    var bh = b >> 16 &amp; 65535;
-    var al = a &amp; 65535;
-    var bl = b &amp; 65535;
-    return al * bl + (ah * bl + al * bh &lt;&lt; 16) | 0;
+    return (a * (b >>> 16) &lt;&lt; 16) + a * (b &amp; 65535) | 0;
   };
 
   test = function(seed) {
