@@ -2076,14 +2076,25 @@ namespace Math {
   def exp(x double) double
   def log(x double) double
   def pow(x double, y double) double
-  def random double
   def sqrt(x double) double
 
-  def max(x double, y double) double
-  def max(x int, y int) int
+  def random double
+  def randomInRange(min double, max double) double
+  def randomInRange(minInclusive int, maxExclusive int) int
 
+  def max(x double, y double) double
   def min(x double, y double) double
+  def max(x double, y double, z double) double
+  def min(x double, y double, z double) double
+  def max(x double, y double, z double, w double) double
+  def min(x double, y double, z double, w double) double
+
+  def max(x int, y int) int
   def min(x int, y int) int
+  def max(x int, y int, z int) int
+  def min(x int, y int, z int) int
+  def max(x int, y int, z int, w int) int
+  def min(x int, y int, z int, w int) int
 
   def clamp(x double, min double, max double) double
   def clamp(x int, min int, max int) int
