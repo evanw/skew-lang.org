@@ -1713,6 +1713,7 @@ class int {
   def *(x int) int
   def /(x int) int
   def %(x int) int # Remainder, not modulus (different for negative values)
+  def %%(x int) int # Modulus operator (wraps from 0 to x)
   def **(x int) int # Exponential operator
   def &lt;=>(x int) int # Makes "&lt;", ">", "&lt;=", and ">=" work
   def &lt;&lt;(x int) int
@@ -1727,6 +1728,7 @@ class int {
   def /=(x int) int
   def *=(x int) int
   def %=(x int) int # Remainder, not modulus (different for negative values)
+  def %%=(x int) int # Modulus operator (wraps from 0 to x)
   def **=(x int) int # Exponential operator
   def &lt;&lt;=(x int) int
   def >>=(x int) int # Signed shift operator
@@ -1765,6 +1767,7 @@ class double {
   def -(x double) double
   def *(x double) double
   def /(x double) double
+  def %%(x double) double # Modulus operator (wraps from 0 to x)
   def **(x double) double # Exponential operator
   def &lt;=>(x double) int # Makes "&lt;", ">", "&lt;=", and ">=" work
 
@@ -1772,6 +1775,7 @@ class double {
   def -=(x double) double
   def *=(x double) double
   def /=(x double) double
+  def %%=(x double) double # Modulus operator (wraps from 0 to x)
   def **=(x double) double # Exponential operator
 
   def isFinite bool
